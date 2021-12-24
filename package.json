@@ -1,0 +1,37 @@
+{
+	"name": "e_commerce_api",
+	"version": "1.0.0",
+	"description": "",
+	"main": "./src/index.ts",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"dev": "ts-node-dev ./src/index.ts --exec babel-node",
+		"build": "babel src -d dist"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/oleesir/e_commerce_api.git"
+	},
+	"author": "olisa",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/oleesir/e_commerce_api/issues"
+	},
+	"homepage": "https://github.com/oleesir/e_commerce_api#readme",
+	"dependencies": {
+		"@types/express": "^4.17.13",
+		"dotenv": "^10.0.0",
+		"express": "^4.17.2",
+		"mongoose": "^6.1.2"
+	},
+	"devDependencies": {
+		"@babel/cli": "^7.16.0",
+		"@babel/core": "^7.16.5",
+		"@babel/node": "^7.16.5",
+		"@babel/preset-env": "^7.16.5",
+		"@types/mongoose": "^5.11.97",
+		"ts-node": "^10.4.0",
+		"ts-node-dev": "^1.1.8",
+		"typescript": "^4.5.4"
+	}
+}
