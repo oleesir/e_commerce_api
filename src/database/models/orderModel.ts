@@ -3,8 +3,8 @@ import { Schema, Document, model, Types } from "mongoose";
 interface IPaymentResult extends Document {
 	id: string;
 	status: string;
-	update_time: string;
-	email_address: string;
+	updateTime: string;
+	emailAddress: string;
 }
 
 interface IOrderItems extends Document {
@@ -36,8 +36,8 @@ interface IOrder extends Document {
 const paymentResultSchema = new Schema<IPaymentResult>({
 	id: { type: String },
 	status: { type: String },
-	update_time: { type: String },
-	email_address: { type: String },
+	updateTime: { type: String },
+	emailAddress: { type: String },
 });
 
 const orderItemsSchema = new Schema<IOrderItems>({
@@ -45,12 +45,12 @@ const orderItemsSchema = new Schema<IOrderItems>({
 	quantity: { type: Number, required: true },
 	image: { type: String, required: true },
 	price: { type: Number, required: true },
-	product: { type: Types.ObjectId, required: true, ref: "Product" },
+	product: { type: Schema.Types.ObjectId, required: true, ref: "Product" },
 });
 
 const orderSchema = new Schema<IOrder>(
 	{
-		user: { type: Types.ObjectId, required: true, ref: "User" },
+		user: { type: Schema.Types.ObjectId, required: true, ref: "User" },
 		orderItems: [orderItemsSchema],
 		address: { type: String, required: true },
 		city: { type: String, required: true },
