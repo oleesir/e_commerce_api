@@ -22,7 +22,7 @@ const reviewSchema = new Schema<IReviews>({
 	name: { type: String, required: true },
 	rating: { type: Number, required: true },
 	comment: { type: String, required: true },
-	user: { type: Types.ObjectId, required: true, ref: "User" },
+	user: { type: Schema.Types.ObjectId, required: true, ref: "User" },
 });
 
 const productSchema = new Schema<IProduct>(
