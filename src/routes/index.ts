@@ -1,10 +1,8 @@
 import { Router } from "express";
-import seedUsersRoute from "./seedUsersRoute";
-import seedProductsRoute from "./seedProductsRoute";
+import authRoute from "./authRoute";
 
 const router = Router();
 
-router.use("/seed", seedUsersRoute);
-router.use("/seed", seedProductsRoute);
+router.use("/users", authRoute);
 
 export default router;

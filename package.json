@@ -2,10 +2,11 @@
 	"name": "e_commerce_api",
 	"version": "1.0.0",
 	"description": "",
-	"main": "./src/index.ts",
+	"main": "./src/app.ts",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"dev": "ts-node-dev ./src/index.ts --exec babel-node",
+		"dev": "ts-node-dev ./src/app.ts --exec babel-node",
+		"seed": "ts-node ./src/database/seedData/index.ts",
 		"build": "babel src -d dist"
 	},
 	"repository": {
@@ -20,10 +21,15 @@
 	"homepage": "https://github.com/oleesir/e_commerce_api#readme",
 	"dependencies": {
 		"@types/bcryptjs": "^2.4.2",
+		"@types/cookie-parser": "^1.4.2",
 		"@types/express": "^4.17.13",
+		"@types/jsonwebtoken": "^8.5.8",
 		"bcryptjs": "^2.4.3",
+		"cookie-parser": "^1.4.6",
 		"dotenv": "^10.0.0",
 		"express": "^4.17.2",
+		"joi": "^17.6.0",
+		"jsonwebtoken": "^8.5.1",
 		"mongoose": "^6.1.2"
 	},
 	"devDependencies": {
