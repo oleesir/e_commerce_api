@@ -1,5 +1,7 @@
 import express, { Application, Request, Response } from "express";
+import cookieParser from "cookie-parser";
 import connect from "./database/index";
+import handleError from "./utils/errorHandler";
 import routes from "./routes/index";
 import dotenv from "dotenv";
 dotenv.config();
@@ -12,6 +14,8 @@ connect(process.env.MONGO_URI);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use(cookieParser());
+
 //API
 app.use("/api/v1", routes);
 
@@ -21,6 +25,7 @@ app.get("/", async (req: Request, res: Response): Promise<Response> => {
 	});
 });
 
+app.use(handleError);
 app.listen(port, () => {
 	console.log(`listening at http://localhost:${port}`);
 });

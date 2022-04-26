@@ -1,16 +1,32 @@
-import { Request, Response } from "express";
+import mongoose, { ConnectOptions } from "mongoose";
 import { users, products } from "../data/dummyData";
 import User from "../models/userModel";
 import Product from "../models/productModel";
+import dotenv from "dotenv";
+dotenv.config();
 
-export const seedUsers = async (req: Request, res: Response) => {
+mongoose
+	.connect(
+		process.env.MONGO_URI as string,
+		{
+			useNewUrlParser: true,
+			useUnifiedTopology: true,
+		} as ConnectOptions,
+	)
+	.then(() => {
+		console.log("Db seeded successfully");
+	})
+	.catch((err) => {
+		console.log(err);
+	});
+
+const seedDB = async () => {
 	await User.deleteMany({});
-	const seedUsers = await User.insertMany(users);
-	return res.json({ seedUsers });
+	await User.insertMany(users);
+	await Product.deleteMany({});
+	await Product.insertMany(products);
 };
 
-export const seedProducts = async (req: Request, res: Response) => {
-	await Product.deleteMany({});
-	const seedProducts = await Product.insertMany(products);
-	return res.json({ seedProducts });
-};
+seedDB().then(() => {
+	mongoose.connection.close();
+});
