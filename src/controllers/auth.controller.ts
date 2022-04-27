@@ -9,26 +9,27 @@ dotenv.config();
 /**
  * Registers a new user
  * @method registerUser
- * @memberof UserController
+ * @memberof authController
  * @param {object} req
  * @param {object} res
  * @returns {(function|object)} Function next() or JSON object
  */
 export const registerUser = async (req: Request, res: Response) => {
-	const { firstName, lastName, password, email } = req.body;
+	const { firstName, lastName, password, email, isAdmin } = req.body;
 
 	const findUser = await User.findOne({ email });
 
 	if (findUser) return res.status(400).json({ status: "failed", message: "Email already exist" });
 
-	const payload = { email };
-
-	const token = generateToken(payload, process.env.SECRET_KEY as string);
 	const hashed = bcrypt.hashSync(password, 10);
 
 	const newUser = new User({ firstName, lastName, email, password: hashed });
 
 	const savedUser = await newUser.save();
+
+	const payload = { _id: savedUser._id, email: savedUser.email, isAdmin: savedUser.isAdmin };
+
+	const token = generateToken(payload, process.env.SECRET_KEY as string);
 
 	const data = {
 		_id: savedUser._id,
@@ -42,7 +43,7 @@ export const registerUser = async (req: Request, res: Response) => {
 	return res
 		.status(201)
 		.cookie("token", token, {
-			maxAge: 1000 * 60 * 60,
+			maxAge: 1000 * 60 * 60 * 24,
 			secure: false,
 			httpOnly: true,
 			// sameSite: 'lax',
@@ -53,7 +54,7 @@ export const registerUser = async (req: Request, res: Response) => {
 /**
  * Login a new user
  * @method loginUser
- * @memberof UserController
+ * @memberof authController
  * @param {object} req
  * @param {object} res
  * @returns {(function|object)} Function next() or JSON object
@@ -72,8 +73,9 @@ export const loginUser = async (req: Request, res: Response) => {
 	}
 
 	const payload = {
-		id: findUser._id,
+		_id: findUser._id,
 		email: findUser.email,
+		isAdmin: findUser.isAdmin,
 	};
 
 	const token = generateToken(payload, process.env.SECRET_KEY as string);
@@ -90,7 +92,7 @@ export const loginUser = async (req: Request, res: Response) => {
 	return res
 		.status(200)
 		.cookie("token", token, {
-			maxAge: 1000 * 60 * 60,
+			maxAge: 1000 * 60 * 60 * 24,
 			secure: false,
 			httpOnly: true,
 			// sameSite: 'lax',
