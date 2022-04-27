@@ -32,3 +32,19 @@ export const validateRegisteredUser = (req: Request, res: Response, next: NextFu
 	}
 	next();
 };
+
+export const validateLoginUser = (req: Request, res: Response, next: NextFunction) => {
+	const loginSchema = Joi.object().keys({
+		email: Joi.string().email({ minDomainSegments: 2 }).lowercase().required(),
+		password: Joi.string().min(8).required(),
+	});
+	const result = loginSchema.validate(req.body, { abortEarly: false });
+	const { error } = result;
+	const valid = error == null;
+	if (!valid) {
+		const { details } = error;
+		const message = details.map((i) => i.message).join(",");
+		return res.status(400).json({ error: message });
+	}
+	next();
+};
