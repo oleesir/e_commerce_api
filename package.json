@@ -10,8 +10,9 @@
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"dev": "ts-node-dev ./src/app.ts --exec babel-node",
 		"seed": "ts-node ./src/database/seedData/index.ts",
-		"build": "babel src -d dist",
-		"start": "node ./dist/app.js"
+		"clean": "rm -rf dist",
+		"build": "npm run clean && babel --extensions .ts ./src -d ./dist",
+		"start": "ts-node ./dist/app.js"
 	},
 	"repository": {
 		"type": "git",
