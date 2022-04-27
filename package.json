@@ -12,7 +12,7 @@
 		"seed": "ts-node ./src/database/seedData/index.ts",
 		"clean": "rm -rf dist",
 		"build": "npm run clean && babel --extensions .ts ./src -d ./dist",
-		"start": "ts-node ./dist/app.js"
+		"start": "node ./dist/app.js"
 	},
 	"repository": {
 		"type": "git",
