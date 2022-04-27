@@ -1,7 +1,7 @@
 import express, { Application, Request, Response } from "express";
 import cookieParser from "cookie-parser";
 import connect from "./database/index";
-import handleError from "./utils/errorHandler";
+import handleError from "./middleware/errorHandler.middleware";
 import routes from "./routes/index";
 import dotenv from "dotenv";
 dotenv.config();

@@ -1,10 +1,11 @@
 import { Router } from "express";
-import { registerUser } from "../controllers/auth.controller";
+import { registerUser, loginUser } from "../controllers/user.controller";
 import asyncHandler from "../middleware/asyncErrorHandler.middleware";
-import { validateRegisteredUser } from "../middleware/validation.middleware";
+import { validateRegisteredUser, validateLoginUser } from "../middleware/validation.middleware";
 
 const router: Router = Router();
 
-router.post("/", validateRegisteredUser, asyncHandler(registerUser));
+router.post("/signup", validateRegisteredUser, asyncHandler(registerUser));
+router.post("/login", validateLoginUser, asyncHandler(loginUser));
 
 export default router;
