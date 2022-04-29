@@ -39,3 +39,31 @@ export const getUser = async (req: Request, res: Response) => {
 	}
 	return res.status(200).json({ status: "success", data });
 };
+
+/**
+ * update user
+ * @method updateUser
+ * @memberof usersController
+ * @param {object} req
+ * @param {object} res
+ * @returns {(function|object)} Function next() or JSON object
+ */
+export const updateUser = async (req: Request, res: Response) => {
+	const { _id } = req.params;
+	const { firstName, lastName, email, isAdmin } = req.body;
+
+	const foundUser = await User.findOne({ _id });
+
+	if (!foundUser) {
+		return res.status(404).json({ status: "failed", message: "User does not exist" });
+	}
+
+	foundUser.firstName = foundUser.firstName || firstName;
+	foundUser.lastName = foundUser.lastName || lastName;
+	foundUser.email = foundUser.email || email;
+	foundUser.isAdmin = Boolean(isAdmin);
+
+	const data = await foundUser.save();
+
+	return res.status(200).json({ status: "success", data });
+};
