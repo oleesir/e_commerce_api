@@ -10,8 +10,16 @@ import User from "../database/models/userModel";
  * @returns {(function|object)} Function next() or JSON object
  */
 export const getAllUsers = async (req: Request, res: Response) => {
-	const data = await User.find({});
-	res.status(200).json({ status: "success", data });
+	let page = parseInt(req.query.page as string) || 1;
+	let limit = parseInt(req.query.limit as string) || 5;
+
+	const count = await User.countDocuments();
+
+	const data = await User.find({})
+		.limit(limit * 1)
+		.skip((page - 1) * limit)
+		.exec();
+	return res.status(200).json({ status: "success", data, totalPages: Math.ceil(count / limit), currentPage: page });
 };
 
 /**
@@ -25,5 +33,9 @@ export const getAllUsers = async (req: Request, res: Response) => {
 export const getUser = async (req: Request, res: Response) => {
 	const { _id } = req.params;
 	const data = await User.findOne({ _id });
-	res.status(200).json({ status: "success", data });
+
+	if (!data) {
+		return res.status(404).json({ status: "failed", message: "User does not exist" });
+	}
+	return res.status(200).json({ status: "success", data });
 };
