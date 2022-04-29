@@ -127,3 +127,25 @@ export const updateProfile = async (req: Request, res: Response) => {
 		})
 		.json({ status: "success", data });
 };
+
+/**
+ * delete user
+ * @method deleteUser
+ * @memberof usersController
+ * @param {object} req
+ * @param {object} res
+ * @returns {(function|object)} Function next() or JSON object
+ */
+export const deleteUser = async (req: Request, res: Response) => {
+	const { _id } = req.params;
+
+	const foundUser = await User.findOne({ _id });
+
+	if (!foundUser) {
+		return res.status(404).json({ status: "failed", message: "User does not exist" });
+	}
+
+	await foundUser.deleteOne();
+
+	return res.status(200).json({ status: "success", message: "Successfully deleted" });
+};
