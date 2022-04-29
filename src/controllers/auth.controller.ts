@@ -15,7 +15,7 @@ dotenv.config();
  * @returns {(function|object)} Function next() or JSON object
  */
 export const registerUser = async (req: Request, res: Response) => {
-	const { firstName, lastName, password, email, isAdmin } = req.body;
+	const { firstName, lastName, password, email } = req.body;
 
 	const findUser = await User.findOne({ email });
 
