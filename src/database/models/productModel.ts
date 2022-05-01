@@ -9,6 +9,7 @@ interface IReviews extends Document {
 
 interface IProduct extends Document {
 	name: string;
+	slug: string;
 	description: string;
 	reviews: Types.DocumentArray<IReviews>;
 	image: string;
@@ -30,6 +31,7 @@ const reviewSchema = new Schema<IReviews>({
 const productSchema = new Schema<IProduct>(
 	{
 		name: { type: String, required: true },
+		slug: { type: String, required: true, unique: true },
 		description: { type: String, required: true },
 		reviews: [reviewSchema],
 		image: { type: String, required: true, unique: true },
