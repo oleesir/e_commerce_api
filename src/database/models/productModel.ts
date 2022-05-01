@@ -12,6 +12,8 @@ interface IProduct extends Document {
 	description: string;
 	reviews: Types.DocumentArray<IReviews>;
 	image: string;
+	category: string;
+	brand: string;
 	rating: number;
 	numberOfReviews: number;
 	price: number;
@@ -31,6 +33,8 @@ const productSchema = new Schema<IProduct>(
 		description: { type: String, required: true },
 		reviews: [reviewSchema],
 		image: { type: String, required: true, unique: true },
+		category: { type: String, required: true },
+		brand: { type: String, required: true },
 		rating: { type: Number, required: true },
 		numberOfReviews: { type: Number, required: true, default: 0 },
 		price: { type: Number, required: true, default: 0 },
