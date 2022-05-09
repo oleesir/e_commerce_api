@@ -50,6 +50,7 @@ export const validateLoginUser = (req: Request, res: Response, next: NextFunctio
 };
 
 export const validateUpdatedUser = (req: Request, res: Response, next: NextFunction) => {
+	const roles = ["admin", "client"];
 	const registerSchema = Joi.object().keys({
 		firstName: Joi.string()
 			.regex(/^[a-zA-Z]+$/)
@@ -68,7 +69,7 @@ export const validateUpdatedUser = (req: Request, res: Response, next: NextFunct
 				"any.required": `"username" is a required.`,
 			}),
 		email: Joi.string().email({ minDomainSegments: 2 }).lowercase().required(),
-		isAdmin: Joi.boolean().default(false),
+		role: Joi.any().valid(...roles),
 	});
 	const result = registerSchema.validate(req.body, { abortEarly: false });
 	const { error } = result;

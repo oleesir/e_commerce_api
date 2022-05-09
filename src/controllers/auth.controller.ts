@@ -27,7 +27,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
 	const savedUser = await newUser.save();
 
-	const payload = { _id: savedUser._id, email: savedUser.email, isAdmin: savedUser.isAdmin };
+	const payload = { _id: savedUser._id, email: savedUser.email, role: savedUser.role.toLowerCase() };
 
 	const token = generateToken(payload, process.env.SECRET_KEY as string);
 
@@ -36,7 +36,7 @@ export const registerUser = async (req: Request, res: Response) => {
 		firstName: savedUser.firstName,
 		lastName: savedUser.lastName,
 		email: savedUser.email,
-		isAdmin: savedUser.isAdmin,
+		role: savedUser.role.toLowerCase(),
 		token,
 	};
 
@@ -75,7 +75,7 @@ export const loginUser = async (req: Request, res: Response) => {
 	const payload = {
 		_id: findUser._id,
 		email: findUser.email,
-		isAdmin: findUser.isAdmin,
+		role: findUser.role.toLowerCase(),
 	};
 
 	const token = generateToken(payload, process.env.SECRET_KEY as string);
@@ -85,7 +85,7 @@ export const loginUser = async (req: Request, res: Response) => {
 		firstName: findUser.firstName,
 		lastName: findUser.lastName,
 		email: findUser.email,
-		isAdmin: findUser.isAdmin,
+		role: findUser.role.toLowerCase(),
 		token,
 	};
 

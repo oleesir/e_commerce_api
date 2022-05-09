@@ -19,10 +19,15 @@ export const isAuth = async (req: Request, res: Response, next: NextFunction) =>
 	});
 };
 
-export const isAdmin = (req: Request, res: Response, next: NextFunction) => {
-	if ((<any>req).user && (<any>req).user.isAdmin) {
+export const authorizedRole = (roles: Array<string>) => {
+	return async (req: Request, res: Response, next: NextFunction) => {
+		const { role: userRole } = (<any>req).decode;
+		if (!roles.includes(userRole)) {
+			return res
+				.status(403)
+				.json({ status: "failed", message: "You don't  have the permission to perform this action" });
+		}
+
 		next();
-	} else {
-		return res.status(403).json({ status: "failed", message: "You are not authorized to perform this action" });
-	}
+	};
 };
