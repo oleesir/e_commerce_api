@@ -52,7 +52,7 @@ export const getUser = async (req: Request, res: Response) => {
  */
 export const updateUser = async (req: Request, res: Response) => {
 	const { _id } = req.params;
-	const { firstName, lastName, email, isAdmin } = req.body;
+	const { firstName, lastName, email, role } = req.body;
 
 	const foundUser = await User.findOne({ _id });
 
@@ -63,7 +63,7 @@ export const updateUser = async (req: Request, res: Response) => {
 	foundUser.firstName = firstName || foundUser.firstName;
 	foundUser.lastName = lastName || foundUser.lastName;
 	foundUser.email = email || foundUser.email;
-	foundUser.isAdmin = Boolean(isAdmin);
+	foundUser.role = role || foundUser.role;
 
 	const data = await foundUser.save();
 
@@ -103,7 +103,7 @@ export const updateProfile = async (req: Request, res: Response) => {
 	const payload = {
 		_id: updatedUser._id,
 		email: updatedUser.email,
-		isAdmin: updatedUser.isAdmin,
+		role: updatedUser.role.toLowerCase(),
 	};
 
 	const token = generateToken(payload, process.env.SECRET_KEY as string);
@@ -113,7 +113,7 @@ export const updateProfile = async (req: Request, res: Response) => {
 		firstName: updatedUser.firstName,
 		lastName: updatedUser.lastName,
 		email: updatedUser.email,
-		isAdmin: updatedUser.isAdmin,
+		role: updatedUser.role.toLowerCase(),
 		token,
 	};
 

@@ -1,11 +1,11 @@
+import { roles } from "./../../utils/constants";
 import { Schema, Document, model } from "mongoose";
-
 interface IUser extends Document {
 	firstName: string;
 	lastName: string;
 	password: string;
 	email: string;
-	isAdmin: boolean;
+	role: string;
 }
 
 const userSchema = new Schema<IUser>(
@@ -14,7 +14,7 @@ const userSchema = new Schema<IUser>(
 		lastName: { type: String, required: true },
 		password: { type: String, required: true },
 		email: { type: String, required: true, unique: true },
-		isAdmin: { type: Boolean, required: true, default: false },
+		role: { type: String, enum: [roles.ADMIN, roles.CLIENT], default: roles.CLIENT },
 	},
 	{ timestamps: true },
 );
