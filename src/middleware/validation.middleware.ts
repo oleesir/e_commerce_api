@@ -20,6 +20,10 @@ export const validateRegisteredUser = (req: Request, res: Response, next: NextFu
 				"any.required": `"username" is a required.`,
 			}),
 		email: Joi.string().email({ minDomainSegments: 2 }).lowercase().required(),
+		address: Joi.string().required().messages({
+			"string.pattern.empty": `"address" cannot be an empty field`,
+			"any.required": `"address" is a required.`,
+		}),
 		password: Joi.string().min(8).required(),
 	});
 	const result = registerSchema.validate(req.body, { abortEarly: false });
