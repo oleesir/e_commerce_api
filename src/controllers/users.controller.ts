@@ -52,7 +52,9 @@ export const getUser = async (req: Request, res: Response) => {
  */
 export const updateUser = async (req: Request, res: Response) => {
 	const { _id } = req.params;
-	const { firstName, lastName, email, role } = req.body;
+	const { firstName, lastName, email, role, address } = req.body;
+
+	console.log("DECODED UPDATED", (<any>req).user);
 
 	const foundUser = await User.findOne({ _id });
 
@@ -63,6 +65,7 @@ export const updateUser = async (req: Request, res: Response) => {
 	foundUser.firstName = firstName || foundUser.firstName;
 	foundUser.lastName = lastName || foundUser.lastName;
 	foundUser.email = email || foundUser.email;
+	foundUser.address = address || foundUser.address;
 	foundUser.role = role || foundUser.role;
 
 	const data = await foundUser.save();

@@ -6,10 +6,10 @@ import asyncHandler from "../middleware/asyncErrorHandler.middleware";
 
 const router: Router = Router();
 
-router.put("/:_id", isAuth, validateUserProfile, asyncHandler(updateProfile));
 router.get("/", isAuth, authorizedRole(["admin"]), asyncHandler(getAllUsers));
 router.get("/:_id", isAuth, authorizedRole(["admin"]), asyncHandler(getUser));
 router.put("/:_id", isAuth, authorizedRole(["admin"]), validateUpdatedUser, asyncHandler(updateUser));
+router.put("/:_id", isAuth, authorizedRole(["admin", "client"]), validateUserProfile, asyncHandler(updateProfile));
 router.delete("/:_id", isAuth, authorizedRole(["admin"]), asyncHandler(deleteUser));
 
 export default router;

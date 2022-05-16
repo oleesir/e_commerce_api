@@ -1,6 +1,7 @@
 import "regenerator-runtime/runtime";
 import express, { Application, Request, Response } from "express";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 import connect from "./database/index";
 import handleError from "./middleware/errorHandler.middleware";
 import routes from "./routes/index";
@@ -11,6 +12,14 @@ const app: Application = express();
 const port = process.env.PORT || 5000;
 
 connect(process.env.MONGO_URI);
+
+const corsOptions = {
+	origin: "http://localhost:3000",
+	credentials: true, //access-control-allow-credentials:true
+	optionSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 // Body parsing Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
