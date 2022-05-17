@@ -1,11 +1,26 @@
-import { Request, Response } from "express";
-import User from "../database/models/userModel";
-import { generateToken } from "../utils/generateToken";
-import comparePassword from "../utils/comparePassword";
+import { CookieOptions, Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { getGoogleUser } from "./../utils/googleAuthentication";
+import User from "../database/models/userModel";
+import { generateRefreshToken, generateToken } from "../utils/generateToken";
+import comparePassword from "../utils/comparePassword";
+import { getGoogleOAuthTokens } from "../utils/googleAuthentication";
+import log from "../utils/logger";
 dotenv.config();
+
+const accessTokenCookieOptions: CookieOptions = {
+	maxAge: 1000 * 60 * 60 * 24,
+	httpOnly: true,
+	secure: false,
+	// sameSite: "lax",
+};
+
+const refreshTokenCookieOptions: CookieOptions = {
+	...accessTokenCookieOptions,
+	maxAge: 3.154e10,
+};
 
 /**
  * Registers a new user
@@ -30,7 +45,8 @@ export const registerUser = async (req: Request, res: Response) => {
 
 	const payload = { _id: savedUser._id, email: savedUser.email, role: savedUser.role.toLowerCase() };
 
-	const token = generateToken(payload, process.env.SECRET_KEY as string);
+	const accessToken = generateToken(payload, process.env.SECRET_KEY as string);
+	const refreshToken = generateRefreshToken(payload, process.env.SECRET_KEY as string);
 
 	const data = {
 		_id: savedUser._id,
@@ -39,18 +55,13 @@ export const registerUser = async (req: Request, res: Response) => {
 		email: savedUser.email,
 		address: savedUser.address,
 		role: savedUser.role.toLowerCase(),
-		token,
+		accessToken,
+		refreshToken,
 	};
 
-	return res
-		.status(201)
-		.cookie("token", token, {
-			maxAge: 1000 * 60 * 60 * 24,
-			secure: false,
-			httpOnly: true,
-			// sameSite: 'lax',
-		})
-		.json({ status: "success", data });
+	res.cookie("accessToken", accessToken, accessTokenCookieOptions);
+	res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
+	return res.status(201).json({ status: "success", data });
 };
 
 /**
@@ -66,12 +77,12 @@ export const loginUser = async (req: Request, res: Response) => {
 
 	const findUser = await User.findOne({ email });
 
-	if (!findUser) return res.status(400).json({ status: "failed", message: "User does not exist" });
+	if (!findUser) return res.status(400).json({ status: "failed", message: "email or password is incorrect" });
 
 	const verifyUserPassword = await comparePassword(password, findUser.password);
 
 	if (!verifyUserPassword) {
-		return res.status(401).json({ status: "failure", error: "email or password is incorrect" });
+		return res.status(401).json({ status: "failure", message: "email or password is incorrect" });
 	}
 
 	const payload = {
@@ -79,8 +90,8 @@ export const loginUser = async (req: Request, res: Response) => {
 		email: findUser.email,
 		role: findUser.role.toLowerCase(),
 	};
-
-	const token = generateToken(payload, process.env.SECRET_KEY as string);
+	const accessToken = generateToken(payload, process.env.SECRET_KEY as string);
+	const refreshToken = generateRefreshToken(payload, process.env.SECRET_KEY as string);
 
 	const data = {
 		_id: findUser._id,
@@ -89,18 +100,13 @@ export const loginUser = async (req: Request, res: Response) => {
 		email: findUser.email,
 		address: findUser.address,
 		role: findUser.role.toLowerCase(),
-		token,
+		accessToken,
+		refreshToken,
 	};
 
-	return res
-		.status(200)
-		.cookie("token", token, {
-			maxAge: 1000 * 60 * 60 * 24,
-			secure: false,
-			httpOnly: true,
-			// sameSite: 'lax',
-		})
-		.json({ status: "success", data });
+	res.cookie("accessToken", accessToken, accessTokenCookieOptions);
+	res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
+	return res.status(200).json({ status: "success", data });
 };
 
 /**
@@ -111,7 +117,7 @@ export const loginUser = async (req: Request, res: Response) => {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const loggedInUser = async (req: Request, res: Response) => {
-	const token = req.cookies.token;
+	const token: string = req.cookies.accessToken;
 
 	if (!token) return res.json({ status: "failed", data: null });
 	return jwt.verify(token, process.env.SECRET_KEY as string, async (err: any, decoded: any) => {
@@ -130,4 +136,51 @@ export const loggedInUser = async (req: Request, res: Response) => {
 		};
 		return res.json({ status: "success", data });
 	});
+};
+
+/**
+ * googleOAuth
+ * @method googleOAuth
+ * @param {object} req
+ * @param {object} res
+ * @returns {(function|object)} Function next() or JSON object
+ */
+export const googleOAuth = async (req: Request, res: Response) => {
+	try {
+		//get the code from qs
+		const code = req.query.code as string;
+		//get the id and access token with the code
+		const { id_token, access_token } = await getGoogleOAuthTokens({ code });
+
+		//get user with tokens
+		const googleUser = await getGoogleUser({ id_token, access_token });
+		//upsert the user
+		const user = await User.findOneAndUpdate(
+			{
+				email: googleUser.email,
+			},
+			{
+				email: googleUser.email,
+				firstName: googleUser.given_name,
+				lastName: googleUser.family_name,
+			},
+			{
+				upsert: true,
+				new: true,
+			},
+		);
+
+		//create access and refresh tokens
+		const payload = { _id: user._id, email: user.email, role: user.role };
+		const accessToken = generateToken(payload, process.env.SECRET_KEY as string);
+		const refreshToken = generateRefreshToken(payload, process.env.SECRET_KEY as string);
+		//set cookies
+		res.cookie("accessToken", accessToken, accessTokenCookieOptions);
+		res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
+		//redirect back to client
+		return res.redirect(process.env.FRONT_END_URL as string);
+	} catch (error) {
+		log.error(error, "Failed to authorize Google user");
+		return res.redirect(`${process.env.FRONT_END_URL as string}/oauth/error`);
+	}
 };

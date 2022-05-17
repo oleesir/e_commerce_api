@@ -54,8 +54,6 @@ export const updateUser = async (req: Request, res: Response) => {
 	const { _id } = req.params;
 	const { firstName, lastName, email, role, address } = req.body;
 
-	console.log("DECODED UPDATED", (<any>req).user);
-
 	const foundUser = await User.findOne({ _id });
 
 	if (!foundUser) {
@@ -100,8 +98,6 @@ export const updateProfile = async (req: Request, res: Response) => {
 	}
 
 	const updatedUser = await foundUser.save();
-
-	console.log("UPDATED", updateUser);
 
 	const payload = {
 		_id: updatedUser._id,
