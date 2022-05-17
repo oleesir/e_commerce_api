@@ -3,7 +3,7 @@ import User from "../database/models/userModel";
 import jwt from "jsonwebtoken";
 
 export const isAuth = async (req: Request, res: Response, next: NextFunction) => {
-	const token = req.cookies.token;
+	const token = req.cookies.accessToken;
 
 	if (!token) return res.status(401).json({ status: "failed", message: "No token" });
 
@@ -15,15 +15,7 @@ export const isAuth = async (req: Request, res: Response, next: NextFunction) =>
 			return res.status(401).json({ status: "failed", message: "Invalid token" });
 		}
 
-		// const foundUser = await User.findOne({ email: decode.email });
-
-		// if (!foundUser) {
-		// 	return res.status(401).json({ status: "failed", message: "Unauthorized" });
-		// }
-
 		(<any>req).user = decoded;
-
-		console.log("ROLE", (<any>req).user.role);
 
 		next();
 	});
@@ -31,7 +23,6 @@ export const isAuth = async (req: Request, res: Response, next: NextFunction) =>
 
 export const authorizedRole = (roles: Array<string>) => {
 	return (req: Request, res: Response, next: NextFunction) => {
-		console.log("ROLLING", (<any>req).user.role);
 		if (roles.length && !roles.includes((<any>req).user.role.toLowerCase())) {
 			return res
 				.status(403)

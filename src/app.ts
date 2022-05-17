@@ -2,9 +2,11 @@ import "regenerator-runtime/runtime";
 import express, { Application, Request, Response } from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import morgan from "morgan";
 import connect from "./database/index";
 import handleError from "./middleware/errorHandler.middleware";
 import routes from "./routes/index";
+import log from "./utils/logger";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -24,6 +26,10 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+if (process.env.NODE_ENV === "development") {
+	app.use(morgan("dev"));
+}
+
 app.use(cookieParser());
 
 //API
@@ -37,5 +43,5 @@ app.get("/", async (req: Request, res: Response): Promise<Response> => {
 
 app.use(handleError);
 app.listen(port, () => {
-	console.log(`listening at http://localhost:${port}`);
+	log.info(`listening at http://localhost:${port}`);
 });
