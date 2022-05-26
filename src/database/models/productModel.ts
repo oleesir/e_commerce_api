@@ -39,7 +39,7 @@ const productSchema = new Schema<IProduct>(
 		brand: { type: String, required: true },
 		rating: { type: Number, required: true },
 		numberOfReviews: { type: Number, required: true, default: 0 },
-		price: { type: Number, required: true, default: 0 },
+		price: { type: Number, required: true },
 		countInStock: { type: Number, required: true, default: 0 },
 	},
 	{ timestamps: true },
