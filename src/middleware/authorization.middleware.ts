@@ -26,7 +26,7 @@ export const authorizedRole = (roles: Array<string>) => {
 		if (roles.length && !roles.includes((<any>req).user.role.toLowerCase())) {
 			return res
 				.status(403)
-				.json({ status: "failed", message: "You don't  have the permission to perform this action" });
+				.json({ status: "failed", message: "You don't have the permission to perform this action" });
 		}
 		next();
 	};

@@ -48,7 +48,9 @@ export const validateLoginUser = (req: Request, res: Response, next: NextFunctio
 	if (!valid) {
 		const { details } = error;
 		const message = details.map((i) => i.message).join(",");
-		return res.status(400).json({ error: message });
+		if (message) {
+			return res.status(400).json({ message: "Email or password is incorrect" });
+		}
 	}
 	next();
 };
@@ -81,7 +83,7 @@ export const validateUpdatedUser = (req: Request, res: Response, next: NextFunct
 	if (!valid) {
 		const { details } = error;
 		const message = details.map((i) => i.message).join(",");
-		return res.status(400).json({ error: message });
+		return res.status(400).json({ message });
 	}
 	next();
 };
@@ -113,7 +115,7 @@ export const validateUserProfile = (req: Request, res: Response, next: NextFunct
 	if (!valid) {
 		const { details } = error;
 		const message = details.map((i) => i.message).join(",");
-		return res.status(400).json({ error: message });
+		return res.status(400).json({ message });
 	}
 	next();
 };
@@ -126,7 +128,6 @@ export const validateCreateProduct = (req: Request, res: Response, next: NextFun
 			"any.required": `"username" is a required.`,
 		}),
 
-		image: Joi.string().required(),
 		brand: Joi.string().required().messages({
 			"string.pattern.empty": `"brand" cannot be an empty field`,
 			"any.required": `"brand" is a required.`,
@@ -162,7 +163,7 @@ export const validateCreateProduct = (req: Request, res: Response, next: NextFun
 	if (!valid) {
 		const { details } = error;
 		const message = details.map((i) => i.message).join(",");
-		return res.status(400).json({ error: message });
+		return res.status(400).json({ message });
 	}
 	next();
 };
