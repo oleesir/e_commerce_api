@@ -114,3 +114,21 @@ export const getAllProducts = async (req: Request, res: Response) => {
 		.exec();
 	return res.status(200).json({ status: "success", data, totalPages: Math.ceil(count / limit), currentPage: page });
 };
+
+/**
+ * get a single product
+ * @method getSingleProduct
+ * @memberof productController
+ * @param {object} req
+ * @param {object} res
+ * @returns {(function|object)} Function next() or JSON object
+ */
+export const getSingleProduct = async (req: Request, res: Response) => {
+	const { _id } = req.params;
+	const data = await Product.findById({ _id });
+
+	if (!data) {
+		return res.status(404).json({ status: "failed", message: "Product does not exist" });
+	}
+	return res.status(200).json({ status: "success", data });
+};

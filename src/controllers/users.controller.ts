@@ -34,7 +34,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
  */
 export const getUser = async (req: Request, res: Response) => {
 	const { _id } = req.params;
-	const data = await User.findOne({ _id });
+	const data = await User.findById({ _id });
 
 	if (!data) {
 		return res.status(404).json({ status: "failed", message: "User does not exist" });
@@ -54,7 +54,7 @@ export const updateUser = async (req: Request, res: Response) => {
 	const { _id } = req.params;
 	const { firstName, lastName, email, role, address } = req.body;
 
-	const foundUser = await User.findOne({ _id });
+	const foundUser = await User.findById({ _id });
 
 	if (!foundUser) {
 		return res.status(404).json({ status: "failed", message: "User does not exist" });
@@ -83,7 +83,7 @@ export const updateProfile = async (req: Request, res: Response) => {
 	const { _id } = req.params;
 	const { firstName, lastName, email, password } = req.body;
 
-	const foundUser = await User.findOne({ _id });
+	const foundUser = await User.findById({ _id });
 
 	if (!foundUser) {
 		return res.status(404).json({ status: "failed", message: "User does not exist" });
@@ -138,7 +138,7 @@ export const updateProfile = async (req: Request, res: Response) => {
 export const deleteUser = async (req: Request, res: Response) => {
 	const { _id } = req.params;
 
-	const foundUser = await User.findOne({ _id });
+	const foundUser = await User.findById({ _id });
 
 	if (!foundUser) {
 		return res.status(404).json({ status: "failed", message: "User does not exist" });
