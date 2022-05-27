@@ -132,3 +132,24 @@ export const getSingleProduct = async (req: Request, res: Response) => {
 	}
 	return res.status(200).json({ status: "success", data });
 };
+
+/**
+ * delete product
+ * @method deleteProduct
+ * @memberof productController
+ * @param {object} req
+ * @param {object} res
+ * @returns {(function|object)} Function next() or JSON object
+ */
+export const deleteProduct = async (req: Request, res: Response) => {
+	const { _id } = req.params;
+	const foundProduct = await Product.findById({ _id });
+
+	if (!foundProduct) {
+		return res.status(404).json({ status: "failed", message: "Product does not exist" });
+	}
+
+	await foundProduct.deleteOne();
+
+	return res.status(200).json({ status: "success", message: "Successfully deleted" });
+};

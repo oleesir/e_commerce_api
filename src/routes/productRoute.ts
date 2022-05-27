@@ -1,5 +1,11 @@
 import { Router } from "express";
-import { createProduct, searchProducts, getAllProducts, getSingleProduct } from "../controllers/product.controller";
+import {
+	createProduct,
+	searchProducts,
+	getAllProducts,
+	getSingleProduct,
+	deleteProduct,
+} from "../controllers/product.controller";
 import { authorizedRole, isAuth } from "../middleware/authorization.middleware";
 import { validateCreateProduct } from "../middleware/validation.middleware";
 import { uploadFile } from "../utils/multer";
@@ -18,5 +24,6 @@ router.post(
 router.get("/:_id", isAuth, authorizedRole(["admin", "client"]), asyncHandler(getSingleProduct));
 router.get("/", isAuth, authorizedRole(["admin", "client"]), asyncHandler(getAllProducts));
 router.get("/catalog", isAuth, authorizedRole(["admin", "client"]), asyncHandler(searchProducts));
+router.delete("/:_id", isAuth, authorizedRole(["admin"]), asyncHandler(deleteProduct));
 
 export default router;
