@@ -94,3 +94,23 @@ export const searchProducts = async (req: Request, res: Response) => {
 
 	return res.status(200).json({ status: "success", countedData, data, page, pages: Math.ceil(countedData / pageSize) });
 };
+
+/**
+ * get all products
+ * @method getAllProducts
+ * @memberof productController
+ * @param {object} req
+ * @param {object} res
+ * @returns {(function|object)} Function next() or JSON object
+ */
+export const getAllProducts = async (req: Request, res: Response) => {
+	let page = parseInt(req.query.page as string) || 1;
+	let limit = parseInt(req.query.limit as string) || 50;
+
+	const count = await Product.countDocuments();
+	const data = await Product.find({})
+		.limit(limit * 1)
+		.skip((page - 1) * limit)
+		.exec();
+	return res.status(200).json({ status: "success", data, totalPages: Math.ceil(count / limit), currentPage: page });
+};

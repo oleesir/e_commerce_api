@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createProduct, searchProducts } from "../controllers/product.controller";
+import { createProduct, searchProducts, getAllProducts } from "../controllers/product.controller";
 import { authorizedRole, isAuth } from "../middleware/authorization.middleware";
 import { validateCreateProduct } from "../middleware/validation.middleware";
 import { uploadFile } from "../utils/multer";
@@ -15,6 +15,7 @@ router.post(
 	validateCreateProduct,
 	asyncHandler(createProduct),
 );
-router.get("/", isAuth, authorizedRole(["admin", "client"]), asyncHandler(searchProducts));
+router.get("/", isAuth, authorizedRole(["admin", "client"]), asyncHandler(getAllProducts));
+router.get("/catalog", isAuth, authorizedRole(["admin", "client"]), asyncHandler(searchProducts));
 
 export default router;
