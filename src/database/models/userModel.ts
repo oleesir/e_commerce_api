@@ -16,7 +16,7 @@ const userSchema = new Schema<IUser>(
 		password: { type: String, required: true },
 		address: { type: String, required: true },
 		email: { type: String, required: true, unique: true },
-		role: { type: String, enum: [roles.ADMIN, roles.CLIENT], default: roles.CLIENT },
+		role: { type: String, enum: [roles.ADMIN, roles.SELLER, roles.CUSTOMER], default: roles.CUSTOMER },
 	},
 	{ timestamps: true },
 );

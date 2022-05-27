@@ -1,5 +1,6 @@
 import Joi from "joi";
 import { Request, Response, NextFunction } from "express";
+import { roles } from "../utils/constants";
 
 export const validateRegisteredUser = (req: Request, res: Response, next: NextFunction) => {
 	const registerSchema = Joi.object().keys({
@@ -32,7 +33,7 @@ export const validateRegisteredUser = (req: Request, res: Response, next: NextFu
 	if (!valid) {
 		const { details } = error;
 		const message = details.map((i) => i.message).join(",");
-		return res.status(400).json({ error: message });
+		return res.status(400).json({ message });
 	}
 	next();
 };
@@ -56,7 +57,7 @@ export const validateLoginUser = (req: Request, res: Response, next: NextFunctio
 };
 
 export const validateUpdatedUser = (req: Request, res: Response, next: NextFunction) => {
-	const roles = ["admin", "client"];
+	const authRoles = [roles.ADMIN, roles.SELLER, roles.CUSTOMER];
 	const registerSchema = Joi.object().keys({
 		firstName: Joi.string()
 			.regex(/^[a-zA-Z]+$/)
@@ -75,7 +76,7 @@ export const validateUpdatedUser = (req: Request, res: Response, next: NextFunct
 				"any.required": `"username" is a required.`,
 			}),
 		email: Joi.string().email({ minDomainSegments: 2 }).lowercase().required(),
-		role: Joi.any().valid(...roles),
+		role: Joi.any().valid(...authRoles),
 	});
 	const result = registerSchema.validate(req.body, { abortEarly: false });
 	const { error } = result;
