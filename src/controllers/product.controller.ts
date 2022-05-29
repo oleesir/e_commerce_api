@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import cloudinary from "../utils/cloudinary";
 import { slugify } from "../utils/slugify";
 import Product from "../database/models/productModel";
+import { UploadApiResponse } from "cloudinary";
 
 /**
  * create a product
@@ -130,6 +131,42 @@ export const getSingleProduct = async (req: Request, res: Response) => {
 	if (!data) {
 		return res.status(404).json({ status: "failed", message: "Product does not exist" });
 	}
+	return res.status(200).json({ status: "success", data });
+};
+
+/**
+ * update product
+ * @method updateProduct
+ * @memberof productController
+ * @param {object} req
+ * @param {object} res
+ * @returns {(function|object)} Function next() or JSON object
+ */
+export const updateProduct = async (req: Request, res: Response) => {
+	const { _id } = req.params;
+	const { name, description, category, brand, price, countInStock } = req.body;
+	const foundProduct = await Product.findById({ _id });
+	let imageFile: Express.Multer.File | undefined = req.file;
+
+	if (!foundProduct) {
+		return res.status(404).json({ status: "failed", message: "Product does not exist" });
+	}
+
+	if (!imageFile) {
+		return res.status(404).json({ status: "failed", message: "Image not found" });
+	}
+	const result = await cloudinary.uploader.upload(imageFile.path);
+
+	foundProduct.name = name || foundProduct.name;
+	foundProduct.description = description || foundProduct.description;
+	foundProduct.image = result.secure_url || foundProduct.image;
+	foundProduct.category = category || foundProduct.category;
+	foundProduct.brand = brand || foundProduct.brand;
+	foundProduct.price = price || foundProduct.price;
+	foundProduct.countInStock = countInStock || foundProduct.countInStock;
+
+	const data = await foundProduct.save();
+
 	return res.status(200).json({ status: "success", data });
 };
 
