@@ -5,9 +5,10 @@ import {
 	getAllProducts,
 	getSingleProduct,
 	deleteProduct,
+	updateProduct,
 } from "../controllers/product.controller";
 import { authorizedRole, isAuth } from "../middleware/authorization.middleware";
-import { validateCreateProduct } from "../middleware/validation.middleware";
+import { validateCreateProduct, validateUpdateProduct } from "../middleware/validation.middleware";
 import { uploadFile } from "../utils/multer";
 import { roles } from "../utils/constants";
 import asyncHandler from "../middleware/asyncErrorHandler.middleware";
@@ -35,6 +36,15 @@ router.get(
 	authorizedRole([roles.ADMIN, roles.SELLER, roles.CUSTOMER]),
 	asyncHandler(searchProducts),
 );
+
+router.put(
+	"/:_id",
+	isAuth,
+	authorizedRole([roles.ADMIN, roles.SELLER]),
+	validateUpdateProduct,
+	asyncHandler(updateProduct),
+);
+
 router.delete("/:_id", isAuth, authorizedRole([roles.ADMIN, roles.SELLER]), asyncHandler(deleteProduct));
 
 export default router;
