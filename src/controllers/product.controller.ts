@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import cloudinary from "../utils/cloudinary";
 import { slugify } from "../utils/slugify";
 import Product from "../database/models/productModel";
-import { UploadApiResponse } from "cloudinary";
 
 /**
  * create a product
@@ -19,6 +18,7 @@ export const createProduct = async (req: Request, res: Response) => {
 		return res.status(404).json({ status: "failed", message: "Image not found" });
 	}
 	const result = await cloudinary.uploader.upload(imageFile.path);
+	console.log("RESULT", result);
 
 	const product = new Product({
 		name,
@@ -31,6 +31,7 @@ export const createProduct = async (req: Request, res: Response) => {
 		rating,
 		numberOfReviews,
 		description,
+		cloudinaryId: result.public_id,
 	});
 
 	const data = await product.save();
@@ -143,31 +144,29 @@ export const getSingleProduct = async (req: Request, res: Response) => {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const updateProduct = async (req: Request, res: Response) => {
-	const { _id } = req.params;
-	const { name, description, category, brand, price, countInStock } = req.body;
-	const foundProduct = await Product.findById({ _id });
-	let imageFile: Express.Multer.File | undefined = req.file;
+	try {
+		const { _id } = req.params;
+		const { name, description, category, brand, price, countInStock } = req.body;
+		const foundProduct = await Product.findById({ _id });
 
-	if (!foundProduct) {
-		return res.status(404).json({ status: "failed", message: "Product does not exist" });
+		if (!foundProduct) {
+			return res.status(404).json({ status: "failed", message: "Product does not exist" });
+		}
+
+		foundProduct.name = name || foundProduct.name;
+		foundProduct.description = description || foundProduct.description;
+		foundProduct.slug = (name && slugify(name)) || foundProduct.slug;
+		foundProduct.category = category || foundProduct.category;
+		foundProduct.brand = brand || foundProduct.brand;
+		foundProduct.price = price || foundProduct.price;
+		foundProduct.countInStock = countInStock || foundProduct.countInStock;
+
+		const data = await foundProduct.save();
+
+		return res.status(200).json({ status: "success", data });
+	} catch (error) {
+		console.log("ERROR", error);
 	}
-
-	if (!imageFile) {
-		return res.status(404).json({ status: "failed", message: "Image not found" });
-	}
-	const result = await cloudinary.uploader.upload(imageFile.path);
-
-	foundProduct.name = name || foundProduct.name;
-	foundProduct.description = description || foundProduct.description;
-	foundProduct.image = result.secure_url || foundProduct.image;
-	foundProduct.category = category || foundProduct.category;
-	foundProduct.brand = brand || foundProduct.brand;
-	foundProduct.price = price || foundProduct.price;
-	foundProduct.countInStock = countInStock || foundProduct.countInStock;
-
-	const data = await foundProduct.save();
-
-	return res.status(200).json({ status: "success", data });
 };
 
 /**

@@ -19,6 +19,7 @@ interface IProduct extends Document {
 	numberOfReviews: number;
 	price: number;
 	countInStock: number;
+	cloudinaryId: string;
 }
 
 const reviewSchema = new Schema<IReviews>({
@@ -31,6 +32,7 @@ const reviewSchema = new Schema<IReviews>({
 const productSchema = new Schema<IProduct>(
 	{
 		name: { type: String, required: true },
+		cloudinaryId: { type: String, required: true, unique: true },
 		slug: { type: String, required: true, unique: true },
 		description: { type: String, required: true },
 		reviews: [reviewSchema],

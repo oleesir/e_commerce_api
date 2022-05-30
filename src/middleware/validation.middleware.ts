@@ -6,6 +6,7 @@ export const validateRegisteredUser = (req: Request, res: Response, next: NextFu
 	const registerSchema = Joi.object().keys({
 		firstName: Joi.string()
 			.regex(/^[a-zA-Z]+$/)
+			.min(2)
 			.required()
 			.messages({
 				"string.pattern.base": `"username" should be a type of 'text'`,
@@ -14,6 +15,7 @@ export const validateRegisteredUser = (req: Request, res: Response, next: NextFu
 			}),
 		lastName: Joi.string()
 			.regex(/^[a-zA-Z]+$/)
+			.min(2)
 			.required()
 			.messages({
 				"string.pattern.base": `"username" should be a type of 'text'`,
@@ -21,7 +23,7 @@ export const validateRegisteredUser = (req: Request, res: Response, next: NextFu
 				"any.required": `"username" is a required.`,
 			}),
 		email: Joi.string().email({ minDomainSegments: 2 }).lowercase().required(),
-		address: Joi.string().required().messages({
+		address: Joi.string().required().min(2).messages({
 			"string.pattern.empty": `"address" cannot be an empty field`,
 			"any.required": `"address" is a required.`,
 		}),
@@ -61,6 +63,7 @@ export const validateUpdatedUser = (req: Request, res: Response, next: NextFunct
 	const registerSchema = Joi.object().keys({
 		firstName: Joi.string()
 			.regex(/^[a-zA-Z]+$/)
+			.min(2)
 			.required()
 			.messages({
 				"string.pattern.base": `"username" should be a type of 'text'`,
@@ -69,6 +72,7 @@ export const validateUpdatedUser = (req: Request, res: Response, next: NextFunct
 			}),
 		lastName: Joi.string()
 			.regex(/^[a-zA-Z]+$/)
+			.min(2)
 			.required()
 			.messages({
 				"string.pattern.base": `"username" should be a type of 'text'`,
@@ -93,6 +97,7 @@ export const validateUserProfile = (req: Request, res: Response, next: NextFunct
 	const registerSchema = Joi.object().keys({
 		firstName: Joi.string()
 			.regex(/^[a-zA-Z]+$/)
+			.min(2)
 			.required()
 			.messages({
 				"string.pattern.base": `"username" should be a type of 'text'`,
@@ -101,6 +106,7 @@ export const validateUserProfile = (req: Request, res: Response, next: NextFunct
 			}),
 		lastName: Joi.string()
 			.regex(/^[a-zA-Z]+$/)
+			.min(2)
 			.required()
 			.messages({
 				"string.pattern.base": `"username" should be a type of 'text'`,
@@ -123,21 +129,21 @@ export const validateUserProfile = (req: Request, res: Response, next: NextFunct
 
 export const validateCreateProduct = (req: Request, res: Response, next: NextFunction) => {
 	const registerSchema = Joi.object().keys({
-		name: Joi.string().required().messages({
+		name: Joi.string().min(2).required().messages({
 			"string.pattern.base": `"username" should be a type of 'text'`,
 			"string.pattern.empty": `"username" cannot be an empty field`,
 			"any.required": `"username" is a required.`,
 		}),
 
-		brand: Joi.string().required().messages({
+		brand: Joi.string().min(2).required().messages({
 			"string.pattern.empty": `"brand" cannot be an empty field`,
 			"any.required": `"brand" is a required.`,
 		}),
-		category: Joi.string().required().messages({
+		category: Joi.string().required().min(2).messages({
 			"string.pattern.empty": `"category" cannot be an empty field`,
 			"any.required": `"category" is a required.`,
 		}),
-		description: Joi.string().required().messages({
+		description: Joi.string().required().min(2).messages({
 			"string.pattern.empty": `"description" cannot be an empty field`,
 			"any.required": `"description" is a required.`,
 		}),
@@ -156,6 +162,40 @@ export const validateCreateProduct = (req: Request, res: Response, next: NextFun
 		countInStock: Joi.number().integer().min(0).required().messages({
 			"string.pattern.empty": `"stock" cannot be an empty field`,
 			"any.required": `"stock" is a required.`,
+		}),
+	});
+	const result = registerSchema.validate(req.body, { abortEarly: false });
+	const { error } = result;
+	const valid = error == null;
+	if (!valid) {
+		const { details } = error;
+		const message = details.map((i) => i.message).join(",");
+		return res.status(400).json({ message });
+	}
+	next();
+};
+
+export const validateUpdateProduct = (req: Request, res: Response, next: NextFunction) => {
+	const registerSchema = Joi.object().keys({
+		name: Joi.string().min(2).messages({
+			"string.pattern.base": `"username" should be a type of 'text'`,
+			"string.pattern.empty": `"username" cannot be an empty field`,
+		}),
+
+		brand: Joi.string().min(2).messages({
+			"string.pattern.empty": `"brand" cannot be an empty field`,
+		}),
+		category: Joi.string().min(2).messages({
+			"string.pattern.empty": `"category" cannot be an empty field`,
+		}),
+		description: Joi.string().min(2).messages({
+			"string.pattern.empty": `"description" cannot be an empty field`,
+		}),
+		price: Joi.number().integer().min(0).messages({
+			"string.pattern.empty": `"price" cannot be an empty field`,
+		}),
+		countInStock: Joi.number().integer().min(0).messages({
+			"string.pattern.empty": `"stock" cannot be an empty field`,
 		}),
 	});
 	const result = registerSchema.validate(req.body, { abortEarly: false });
