@@ -139,6 +139,19 @@ export const loggedInUser = async (req: Request, res: Response) => {
 };
 
 /**
+ * loggedInUser
+ * @method loggedInUser
+ * @param {object} req
+ * @param {object} res
+ * @returns {(function|object)} Function next() or JSON object
+ */
+export const logoutUser = async (req: Request, res: Response) => {
+	const token: string = req.cookies.accessToken;
+	if (!token) return res.status(403).json({ status: "failure", error: "token not found" });
+	return res.clearCookie("accessToken").status(200).json({ message: "Successfully logged out" });
+};
+
+/**
  * googleOAuth
  * @method googleOAuth
  * @param {object} req
