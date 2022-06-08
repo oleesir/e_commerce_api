@@ -15,11 +15,9 @@ const port = process.env.PORT || 5000;
 
 connect(process.env.MONGO_URI);
 
-const allowOrigins = [
-	"http://localhost:3000",
-	"https://oliveshop.netlify.app",
-	// "https://app-ecommerce-api.herokuapp.com/api/v1/auth/sessions/oauth/google",
-];
+app.set("trust proxy", 1);
+
+const allowOrigins = ["http://localhost:3000", "https://oliveshop.netlify.app"];
 const corsOptions = {
 	credentials: true,
 	origin: (origin: any, callback: any) => {
@@ -36,7 +34,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// app.use(cors());
 // Body parsing Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

@@ -12,7 +12,7 @@ dotenv.config();
 
 const accessTokenCookieOptions: CookieOptions = {
 	maxAge: 1000 * 60 * 60 * 24,
-	httpOnly: true,
+	httpOnly: process.env.NODE_ENV === "development" ? true : false,
 	secure: true,
 	sameSite: "none",
 };
