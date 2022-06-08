@@ -13,8 +13,8 @@ dotenv.config();
 const accessTokenCookieOptions: CookieOptions = {
 	maxAge: 1000 * 60 * 60 * 24,
 	secure: true,
-	httpOnly: true,
-	sameSite: "lax",
+	signed: true,
+	httpOnly: false,
 };
 
 const refreshTokenCookieOptions: CookieOptions = {
