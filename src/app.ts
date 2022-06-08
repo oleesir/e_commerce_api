@@ -18,7 +18,7 @@ connect(process.env.MONGO_URI);
 const allowOrigins = [
 	"http://localhost:3000",
 	"https://oliveshop.netlify.app",
-	"https://app-ecommerce-api.herokuapp.com/api/v1/auth/sessions/oauth/google",
+	// "https://app-ecommerce-api.herokuapp.com/api/v1/auth/sessions/oauth/google",
 ];
 const corsOptions = {
 	credentials: true,
