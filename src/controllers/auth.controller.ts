@@ -13,8 +13,8 @@ dotenv.config();
 const accessTokenCookieOptions: CookieOptions = {
 	maxAge: 1000 * 60 * 60 * 24,
 	httpOnly: true,
-	secure: false,
-	// sameSite: "lax",
+	secure: true,
+	sameSite: "none",
 };
 
 const refreshTokenCookieOptions: CookieOptions = {
@@ -87,6 +87,9 @@ export const loginUser = async (req: Request, res: Response) => {
 
 	const payload = {
 		_id: findUser._id,
+		firstName: findUser.firstName,
+		lastName: findUser.lastName,
+		address: findUser.address,
 		email: findUser.email,
 		role: findUser.role.toLowerCase(),
 	};
@@ -131,9 +134,13 @@ export const loggedInUser = async (req: Request, res: Response) => {
 		}
 		const data = {
 			_id: foundUser._id,
+			firstName: foundUser.firstName,
+			lastName: foundUser.lastName,
+			address: foundUser.address,
 			email: foundUser.email,
 			role: foundUser.role.toLowerCase(),
 		};
+
 		return res.json({ status: "success", data });
 	});
 };
@@ -164,7 +171,6 @@ export const googleOAuth = async (req: Request, res: Response) => {
 		const code = req.query.code as string;
 		//get the id and access token with the code
 		const { id_token, access_token } = await getGoogleOAuthTokens({ code });
-
 		//get user with tokens
 		const googleUser = await getGoogleUser({ id_token, access_token });
 		//upsert the user
@@ -184,16 +190,21 @@ export const googleOAuth = async (req: Request, res: Response) => {
 		);
 
 		//create access and refresh tokens
-		const payload = { _id: user._id, email: user.email, role: user.role };
+		const payload = {
+			_id: user._id,
+			email: user.email,
+			role: user.role,
+		};
+
 		const accessToken = generateToken(payload, process.env.SECRET_KEY as string);
 		const refreshToken = generateRefreshToken(payload, process.env.SECRET_KEY as string);
 		//set cookies
 		res.cookie("accessToken", accessToken, accessTokenCookieOptions);
 		res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
 		//redirect back to client
-		return res.redirect(process.env.FRONT_END_URL as string);
+		return res.redirect(process.env.FRONTEND_URL as string);
 	} catch (error) {
 		log.error(error, "Failed to authorize Google user");
-		return res.redirect(`${process.env.FRONT_END_URL as string}/oauth/error`);
+		return res.redirect(`${process.env.FRONTEND_URL as string}/oauth/error`);
 	}
 };
