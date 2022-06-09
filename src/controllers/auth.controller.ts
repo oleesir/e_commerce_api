@@ -14,7 +14,7 @@ const accessTokenCookieOptions: CookieOptions = {
 	maxAge: 1000 * 60 * 60 * 24,
 	httpOnly: true,
 	secure: true,
-	sameSite: true,
+	sameSite: false,
 	domain: "https://oliveshop.netlify.app",
 };
 
