@@ -15,7 +15,7 @@ const accessTokenCookieOptions: CookieOptions = {
 	httpOnly: true,
 	sameSite: "none",
 	secure: true,
-	domain: process.env.NODE_ENV === "development" ? "localhost" : "oliveshop.netlify.app",
+	domain: process.env.NODE_ENV === "development" ? "localhost" : "app-ecommerce-api.herokuapp.com",
 };
 
 const refreshTokenCookieOptions: CookieOptions = {
