@@ -12,7 +12,7 @@ dotenv.config();
 
 const accessTokenCookieOptions: CookieOptions = {
 	maxAge: 1000 * 60 * 60 * 24,
-	httpOnly: true,
+	// httpOnly: true,
 	secure: true,
 	sameSite: false,
 	domain: "https://oliveshop.netlify.app",
