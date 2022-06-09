@@ -18,7 +18,6 @@ export const createProduct = async (req: Request, res: Response) => {
 		return res.status(404).json({ status: "failed", message: "Image not found" });
 	}
 	const result = await cloudinary.uploader.upload(imageFile.path);
-	console.log("RESULT", result);
 
 	const product = new Product({
 		name,
@@ -144,29 +143,25 @@ export const getSingleProduct = async (req: Request, res: Response) => {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const updateProduct = async (req: Request, res: Response) => {
-	try {
-		const { _id } = req.params;
-		const { name, description, category, brand, price, countInStock } = req.body;
-		const foundProduct = await Product.findById({ _id });
+	const { _id } = req.params;
+	const { name, description, category, brand, price, countInStock } = req.body;
+	const foundProduct = await Product.findById({ _id });
 
-		if (!foundProduct) {
-			return res.status(404).json({ status: "failed", message: "Product does not exist" });
-		}
-
-		foundProduct.name = name || foundProduct.name;
-		foundProduct.description = description || foundProduct.description;
-		foundProduct.slug = (name && slugify(name)) || foundProduct.slug;
-		foundProduct.category = category || foundProduct.category;
-		foundProduct.brand = brand || foundProduct.brand;
-		foundProduct.price = price || foundProduct.price;
-		foundProduct.countInStock = countInStock || foundProduct.countInStock;
-
-		const data = await foundProduct.save();
-
-		return res.status(200).json({ status: "success", data });
-	} catch (error) {
-		console.log("ERROR", error);
+	if (!foundProduct) {
+		return res.status(404).json({ status: "failed", message: "Product does not exist" });
 	}
+
+	foundProduct.name = name || foundProduct.name;
+	foundProduct.description = description || foundProduct.description;
+	foundProduct.slug = (name && slugify(name)) || foundProduct.slug;
+	foundProduct.category = category || foundProduct.category;
+	foundProduct.brand = brand || foundProduct.brand;
+	foundProduct.price = price || foundProduct.price;
+	foundProduct.countInStock = countInStock || foundProduct.countInStock;
+
+	const data = await foundProduct.save();
+
+	return res.status(200).json({ status: "success", data });
 };
 
 /**

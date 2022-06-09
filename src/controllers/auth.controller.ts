@@ -12,7 +12,7 @@ dotenv.config();
 
 const accessTokenCookieOptions: CookieOptions = {
 	maxAge: 1000 * 60 * 60 * 24,
-	// httpOnly: true,
+	httpOnly: true,
 	secure: true,
 	sameSite: false,
 	domain: "https://oliveshop.netlify.app",
@@ -133,7 +133,7 @@ export const loggedInUser = async (req: Request, res: Response) => {
 		if (!foundUser) {
 			return res.status(404).json({ status: "failed", message: "User does not exist" });
 		}
-		const data = {
+		const payload = {
 			_id: foundUser._id,
 			firstName: foundUser.firstName,
 			lastName: foundUser.lastName,
@@ -142,12 +142,29 @@ export const loggedInUser = async (req: Request, res: Response) => {
 			role: foundUser.role.toLowerCase(),
 		};
 
+		const accessToken = generateToken(payload, process.env.SECRET_KEY as string);
+		const refreshToken = generateRefreshToken(payload, process.env.SECRET_KEY as string);
+
+		const data = {
+			_id: foundUser._id,
+			firstName: foundUser.firstName,
+			lastName: foundUser.lastName,
+			address: foundUser.address,
+			email: foundUser.email,
+			role: foundUser.role.toLowerCase(),
+			accessToken,
+			refreshToken,
+		};
+
+		res.cookie("accessToken", accessToken, accessTokenCookieOptions);
+		res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
+
 		return res.json({ status: "success", data });
 	});
 };
 
 /**
- * loggedInUser
+ * logoutUser
  * @method loggedInUser
  * @param {object} req
  * @param {object} res
@@ -170,10 +187,12 @@ export const googleOAuth = async (req: Request, res: Response) => {
 	try {
 		//get the code from qs
 		const code = req.query.code as string;
+
 		//get the id and access token with the code
 		const { id_token, access_token } = await getGoogleOAuthTokens({ code });
 		//get user with tokens
 		const googleUser = await getGoogleUser({ id_token, access_token });
+
 		//upsert the user
 		const user = await User.findOneAndUpdate(
 			{
