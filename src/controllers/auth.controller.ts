@@ -15,6 +15,7 @@ const accessTokenCookieOptions: CookieOptions = {
 	httpOnly: true,
 	secure: true,
 	sameSite: true,
+	domain: "https://oliveshop.netlify.app",
 };
 
 const refreshTokenCookieOptions: CookieOptions = {
