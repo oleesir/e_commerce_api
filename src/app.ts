@@ -15,8 +15,6 @@ const port = process.env.PORT || 5000;
 
 connect(process.env.MONGO_URI);
 
-app.set("trust proxy", 1);
-
 const allowOrigins = ["http://localhost:3000", "https://oliveshop.netlify.app"];
 const corsOptions = {
 	credentials: true,

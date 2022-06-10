@@ -50,14 +50,12 @@ export const registerUser = async (req: Request, res: Response) => {
 	const refreshToken = generateRefreshToken(payload, process.env.SECRET_KEY as string);
 
 	const data = {
-		_id: savedUser._id,
-		firstName: savedUser.firstName,
-		lastName: savedUser.lastName,
-		email: savedUser.email,
-		address: savedUser.address,
-		role: savedUser.role.toLowerCase(),
-		accessToken,
-		refreshToken,
+		_id: savedUser?._id,
+		firstName: savedUser?.firstName,
+		lastName: savedUser?.lastName,
+		email: savedUser?.email.toLowerCase(),
+		address: savedUser?.address,
+		role: savedUser?.role.toLowerCase(),
 	};
 
 	res.cookie("accessToken", accessToken, accessTokenCookieOptions);
@@ -87,25 +85,23 @@ export const loginUser = async (req: Request, res: Response) => {
 	}
 
 	const payload = {
-		_id: findUser._id,
-		firstName: findUser.firstName,
-		lastName: findUser.lastName,
-		address: findUser.address,
-		email: findUser.email,
-		role: findUser.role.toLowerCase(),
+		_id: findUser?._id,
+		firstName: findUser?.firstName,
+		lastName: findUser?.lastName,
+		address: findUser?.address,
+		email: findUser?.email.toLowerCase(),
+		role: findUser?.role.toLowerCase(),
 	};
 	const accessToken = generateToken(payload, process.env.SECRET_KEY as string);
 	const refreshToken = generateRefreshToken(payload, process.env.SECRET_KEY as string);
 
 	const data = {
-		_id: findUser._id,
-		firstName: findUser.firstName,
-		lastName: findUser.lastName,
-		email: findUser.email,
-		address: findUser.address,
-		role: findUser.role.toLowerCase(),
-		accessToken,
-		refreshToken,
+		_id: findUser?._id,
+		firstName: findUser?.firstName,
+		lastName: findUser?.lastName,
+		email: findUser?.email.toLowerCase(),
+		address: findUser?.address,
+		role: findUser?.role.toLowerCase(),
 	};
 
 	res.cookie("accessToken", accessToken, accessTokenCookieOptions);
@@ -133,31 +129,14 @@ export const loggedInUser = async (req: Request, res: Response) => {
 		if (!foundUser) {
 			return res.status(404).json({ status: "failed", message: "User does not exist" });
 		}
-		const payload = {
-			_id: foundUser._id,
-			firstName: foundUser.firstName,
-			lastName: foundUser.lastName,
-			address: foundUser.address,
-			email: foundUser.email,
-			role: foundUser.role.toLowerCase(),
-		};
-
-		const accessToken = generateToken(payload, process.env.SECRET_KEY as string);
-		const refreshToken = generateRefreshToken(payload, process.env.SECRET_KEY as string);
 
 		const data = {
-			_id: foundUser._id,
-			firstName: foundUser.firstName,
-			lastName: foundUser.lastName,
-			address: foundUser.address,
-			email: foundUser.email,
-			role: foundUser.role.toLowerCase(),
-			accessToken,
-			refreshToken,
+			_id: foundUser?._id,
+			firstName: foundUser?.lastName,
+			address: foundUser?.address,
+			email: foundUser?.email.toLowerCase(),
+			role: foundUser?.role.toLowerCase(),
 		};
-
-		res.cookie("accessToken", accessToken, accessTokenCookieOptions);
-		res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
 
 		return res.json({ status: "success", data });
 	});
@@ -199,7 +178,7 @@ export const googleOAuth = async (req: Request, res: Response) => {
 				email: googleUser.email,
 			},
 			{
-				email: googleUser.email,
+				email: googleUser.email.toLowerCase(),
 				firstName: googleUser.given_name,
 				lastName: googleUser.family_name,
 			},
@@ -211,9 +190,12 @@ export const googleOAuth = async (req: Request, res: Response) => {
 
 		//create access and refresh tokens
 		const payload = {
-			_id: user._id,
-			email: user.email,
-			role: user.role,
+			_id: user?._id,
+			firstName: user?.firstName,
+			lastName: user?.lastName,
+			address: user?.address,
+			email: user?.email.toLowerCase(),
+			role: user?.role.toLowerCase(),
 		};
 
 		const accessToken = generateToken(payload, process.env.SECRET_KEY as string);
