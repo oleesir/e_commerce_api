@@ -152,7 +152,10 @@ export const loggedInUser = async (req: Request, res: Response) => {
 export const logoutUser = async (req: Request, res: Response) => {
 	const token: string = req.cookies.accessToken;
 	if (!token) return res.status(403).json({ status: "failure", error: "token not found" });
-	return res.clearCookie("accessToken").status(200).json({ message: "Successfully logged out" });
+	return res
+		.clearCookie("accessToken", accessTokenCookieOptions)
+		.status(200)
+		.json({ message: "Successfully logged out" });
 };
 
 /**
