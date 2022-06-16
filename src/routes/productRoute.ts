@@ -23,20 +23,9 @@ router.post(
 	validateCreateProduct,
 	asyncHandler(createProduct),
 );
-router.get(
-	"/:_id",
-	isAuth,
-	authorizedRole([roles.ADMIN, roles.SELLER, roles.CUSTOMER]),
-	asyncHandler(getSingleProduct),
-);
-router.get("/", isAuth, authorizedRole([roles.ADMIN, roles.SELLER, roles.CUSTOMER]), asyncHandler(getAllProducts));
-router.get(
-	"/catalog",
-	isAuth,
-	authorizedRole([roles.ADMIN, roles.SELLER, roles.CUSTOMER]),
-	asyncHandler(searchProducts),
-);
-
+router.get("/:_id", asyncHandler(getSingleProduct));
+router.get("/", asyncHandler(getAllProducts));
+router.get("/catalog", asyncHandler(searchProducts));
 router.put(
 	"/:_id",
 	isAuth,

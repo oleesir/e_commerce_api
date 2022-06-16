@@ -14,7 +14,7 @@ const accessTokenCookieOptions: CookieOptions = {
 	maxAge: 1000 * 60 * 60 * 24,
 	httpOnly: true,
 	sameSite: "none",
-	secure: true,
+	secure: process.env.NODE_ENV === "development" ? false : true,
 	domain: process.env.NODE_ENV === "development" ? "localhost" : "app-ecommerce-api.herokuapp.com",
 };
 
