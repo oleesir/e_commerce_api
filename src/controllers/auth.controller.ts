@@ -13,7 +13,7 @@ dotenv.config();
 const accessTokenCookieOptions: CookieOptions = {
 	maxAge: 1000 * 60 * 60 * 24,
 	httpOnly: true,
-	sameSite: "none",
+	sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
 	secure: process.env.NODE_ENV === "development" ? false : true,
 	domain: process.env.NODE_ENV === "development" ? "localhost" : "app-ecommerce-api.herokuapp.com",
 };
@@ -22,6 +22,8 @@ const refreshTokenCookieOptions: CookieOptions = {
 	...accessTokenCookieOptions,
 	maxAge: 3.154e10,
 };
+
+console.log(accessTokenCookieOptions, refreshTokenCookieOptions);
 
 /**
  * Registers a new user
@@ -88,7 +90,6 @@ export const loginUser = async (req: Request, res: Response) => {
 		_id: findUser?._id,
 		firstName: findUser?.firstName,
 		lastName: findUser?.lastName,
-		address: findUser?.address,
 		email: findUser?.email.toLowerCase(),
 		role: findUser?.role.toLowerCase(),
 	};
@@ -191,6 +192,8 @@ export const googleOAuth = async (req: Request, res: Response) => {
 			},
 		);
 
+		console.log("USER", user);
+
 		//create access and refresh tokens
 		const payload = {
 			_id: user?._id,
@@ -203,6 +206,8 @@ export const googleOAuth = async (req: Request, res: Response) => {
 
 		const accessToken = generateToken(payload, process.env.SECRET_KEY as string);
 		const refreshToken = generateRefreshToken(payload, process.env.SECRET_KEY as string);
+
+		console.log("TOKEN", accessToken);
 		//set cookies
 		res.cookie("accessToken", accessToken, accessTokenCookieOptions);
 		res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
