@@ -13,7 +13,8 @@ dotenv.config();
 const accessTokenCookieOptions: CookieOptions = {
 	maxAge: 1000 * 60 * 60 * 24,
 	httpOnly: true,
-	sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
+	sameSite: "none",
+	// sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
 	secure: process.env.NODE_ENV === "development" ? false : true,
 	domain: process.env.NODE_ENV === "development" ? "localhost" : "app-ecommerce-api.herokuapp.com",
 };
