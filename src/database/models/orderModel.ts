@@ -52,9 +52,7 @@ const orderSchema = new Schema<IOrder>(
 	{
 		user: { type: Schema.Types.ObjectId, required: true, ref: "User" },
 		orderItems: [orderItemsSchema],
-		address: { type: String, required: true },
-		city: { type: String, required: true },
-		postalCode: { type: String, required: true },
+		address: { type: Schema.Types.ObjectId, required: true, ref: "User" },
 		country: { type: String, required: true },
 		paymentMethod: { type: String, required: true, default: "Paypal" },
 		paymentResult: paymentResultSchema,

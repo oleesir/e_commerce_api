@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import cloudinary from "../utils/cloudinary";
 import { slugify } from "../utils/slugify";
 import Product from "../database/models/productModel";
+import { UploadApiResponse } from "cloudinary";
 
 /**
  * create a product
@@ -12,17 +13,27 @@ import Product from "../database/models/productModel";
  * @returns {(function|object)} Function next() or JSON object
  */
 export const createProduct = async (req: Request, res: Response) => {
-	let imageFile: Express.Multer.File | undefined = req.file;
+	let imageFiles = req.files;
 	const { name, price, category, brand, countInStock, rating, numberOfReviews, description } = req.body;
-	if (!imageFile) {
+
+	if (!imageFiles || !Array.isArray(imageFiles)) {
 		return res.status(404).json({ status: "failed", message: "Image not found" });
 	}
-	const result = await cloudinary.uploader.upload(imageFile.path);
+
+	let multiplePicturePromise = imageFiles.map((image: any) => cloudinary.uploader.upload(image.path));
+
+	let imageResponses = await Promise.all(multiplePicturePromise);
+	const cloudinaryUrls = imageResponses.map((img) => {
+		return {
+			secureUrl: img.secure_url,
+			cloudinaryId: img.public_id,
+		};
+	});
 
 	const product = new Product({
 		name,
 		slug: slugify(name),
-		image: result.secure_url,
+		images: cloudinaryUrls,
 		price,
 		category,
 		brand,
@@ -30,7 +41,6 @@ export const createProduct = async (req: Request, res: Response) => {
 		rating,
 		numberOfReviews,
 		description,
-		cloudinaryId: result.public_id,
 	});
 
 	const data = await product.save();

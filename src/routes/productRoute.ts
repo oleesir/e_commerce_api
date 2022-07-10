@@ -19,7 +19,7 @@ router.post(
 	"/",
 	isAuth,
 	authorizedRole([roles.ADMIN, roles.SELLER]),
-	uploadFile.single("image"),
+	uploadFile.array("images", 10),
 	validateCreateProduct,
 	asyncHandler(createProduct),
 );
