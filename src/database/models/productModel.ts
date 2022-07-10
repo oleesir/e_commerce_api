@@ -7,19 +7,23 @@ interface IReviews extends Document {
 	user: Types.ObjectId;
 }
 
+interface IImages extends Document {
+	secureUrl: string;
+	cloudinaryId: string;
+}
+
 interface IProduct extends Document {
 	name: string;
 	slug: string;
 	description: string;
 	reviews: Types.DocumentArray<IReviews>;
-	image: string;
+	images: Types.DocumentArray<IImages>;
 	category: string;
 	brand: string;
 	rating: number;
 	numberOfReviews: number;
 	price: number;
 	countInStock: number;
-	cloudinaryId: string;
 }
 
 const reviewSchema = new Schema<IReviews>({
@@ -29,14 +33,18 @@ const reviewSchema = new Schema<IReviews>({
 	user: { type: Schema.Types.ObjectId, required: true, ref: "User" },
 });
 
+const imageSchema = new Schema<IImages>({
+	secureUrl: { type: String },
+	cloudinaryId: { type: String },
+});
+
 const productSchema = new Schema<IProduct>(
 	{
 		name: { type: String, required: true },
-		cloudinaryId: { type: String, required: true, unique: true },
 		slug: { type: String, required: true, unique: true },
 		description: { type: String, required: true },
 		reviews: [reviewSchema],
-		image: { type: String, required: true, unique: true },
+		images: [imageSchema],
 		category: { type: String, required: true },
 		brand: { type: String, required: true },
 		rating: { type: Number, required: true },

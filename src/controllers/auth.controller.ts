@@ -24,7 +24,7 @@ const refreshTokenCookieOptions: CookieOptions = {
 	maxAge: 3.154e10,
 };
 
-console.log(accessTokenCookieOptions, refreshTokenCookieOptions);
+// console.log(accessTokenCookieOptions, refreshTokenCookieOptions);
 
 /**
  * Registers a new user
@@ -193,8 +193,6 @@ export const googleOAuth = async (req: Request, res: Response) => {
 			},
 		);
 
-		console.log("USER", user);
-
 		//create access and refresh tokens
 		const payload = {
 			_id: user?._id,
@@ -208,7 +206,6 @@ export const googleOAuth = async (req: Request, res: Response) => {
 		const accessToken = generateToken(payload, process.env.SECRET_KEY as string);
 		const refreshToken = generateRefreshToken(payload, process.env.SECRET_KEY as string);
 
-		console.log("TOKEN", accessToken);
 		//set cookies
 		res.cookie("accessToken", accessToken, accessTokenCookieOptions);
 		res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
