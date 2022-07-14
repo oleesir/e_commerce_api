@@ -24,8 +24,6 @@ const refreshTokenCookieOptions: CookieOptions = {
 	maxAge: 3.154e10,
 };
 
-// console.log(accessTokenCookieOptions, refreshTokenCookieOptions);
-
 /**
  * Registers a new user
  * @method registerUser
@@ -84,7 +82,7 @@ export const loginUser = async (req: Request, res: Response) => {
 	const verifyUserPassword = await comparePassword(password, findUser.password);
 
 	if (!verifyUserPassword) {
-		return res.status(401).json({ status: "failure", message: "email or password is incorrect" });
+		return res.status(401).json({ status: "failed", message: "email or password is incorrect" });
 	}
 
 	const payload = {
@@ -153,7 +151,7 @@ export const loggedInUser = async (req: Request, res: Response) => {
  */
 export const logoutUser = async (req: Request, res: Response) => {
 	const token: string = req.cookies.accessToken;
-	if (!token) return res.status(403).json({ status: "failure", error: "token not found" });
+	if (!token) return res.status(403).json({ status: "failed", error: "token not found" });
 	return res
 		.clearCookie("accessToken", accessTokenCookieOptions)
 		.status(200)
