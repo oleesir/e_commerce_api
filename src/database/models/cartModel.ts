@@ -4,8 +4,9 @@ interface ICartItems extends Document {
 	user: Types.ObjectId;
 	cartItems: [
 		{
-			product: Types.ObjectId;
+			productId: Types.ObjectId;
 			quantity: number;
+			// price: number;
 		},
 	];
 }
@@ -14,8 +15,9 @@ const cartSchema = new Schema<ICartItems>({
 	user: { type: Schema.Types.ObjectId, required: true, ref: "User" },
 	cartItems: [
 		{
-			product: { type: Schema.Types.ObjectId, ref: "Product", required: true },
+			productId: { type: Schema.Types.ObjectId, ref: "Product", required: true },
 			quantity: { type: Number, default: 1 },
+			// price: { type: Number, default: 0 },
 		},
 	],
 });
