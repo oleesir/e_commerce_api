@@ -77,3 +77,33 @@ export const reduceItemsInCart = async (req: Request, res: Response) => {
 	const data = await userCart.save();
 	return res.status(200).json({ status: "success", data });
 };
+
+/**
+ * remove items in cart
+ * @method removeItemsInCart
+ * @memberof cartController
+ * @param {object} req
+ * @param {object} res
+ * @returns {(function|object)} Function next() or JSON object
+ */
+
+export const removeItemsInCart = async (req: Request, res: Response) => {
+	const { _id: userId } = (<any>req).user;
+	const { productId } = req.params;
+
+	let userCart = await Cart.findOne({ userId });
+
+	if (!userCart) {
+		return res.status(404).json({ status: "failed", message: "No cart found" });
+	}
+
+	const itemIndex = userCart?.cartItems.findIndex((cartItem) => cartItem?.productId.toString() === productId);
+
+	if (userCart.cartItems[itemIndex]) {
+		const nextCartItems = userCart?.cartItems.filter((cartItem: any) => cartItem?.productId.toString() !== productId);
+
+		const data = await Cart.findOneAndUpdate({ userId }, { cartItems: nextCartItems }, { new: true });
+
+		return res.status(200).json({ status: "success", data });
+	}
+};
