@@ -1,23 +1,23 @@
 import { Schema, Document, model, Types } from "mongoose";
 
 interface ICartItems extends Document {
-	user: Types.ObjectId;
+	userId: Types.ObjectId;
 	cartItems: [
 		{
 			productId: Types.ObjectId;
 			quantity: number;
-			// price: number;
+			price: number;
 		},
 	];
 }
 
 const cartSchema = new Schema<ICartItems>({
-	user: { type: Schema.Types.ObjectId, required: true, ref: "User" },
+	userId: { type: Schema.Types.ObjectId, required: true, ref: "User" },
 	cartItems: [
 		{
 			productId: { type: Schema.Types.ObjectId, ref: "Product", required: true },
 			quantity: { type: Number, default: 1 },
-			// price: { type: Number, default: 0 },
+			price: { type: Number, default: 0 },
 		},
 	],
 });
