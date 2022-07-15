@@ -12,11 +12,12 @@ import Cart from "../database/models/cartModel";
 export const addItemToCart = async (req: Request, res: Response) => {
 	const { productId, price } = req.body;
 	const { _id: userId } = (<any>req).user;
+	let cart;
 
 	let userCart = await Cart.findOne({ userId });
 
 	if (!userCart) {
-		const cart = new Cart({ userId, cartItems: [] });
+		cart = new Cart({ userId, cartItems: [], totalQuantity: 0, totalPrice: 0 });
 		userCart = await cart.save();
 	}
 
@@ -39,7 +40,20 @@ export const addItemToCart = async (req: Request, res: Response) => {
 		userCart.cartItems.push(newItem);
 	}
 
-	const data = await userCart.save();
+	let newTotalQuantity = userCart.cartItems.reduce((acc: any, cartItem) => {
+		return acc + cartItem.quantity;
+	}, 0);
+
+	let newTotalPrice = userCart.cartItems.reduce((acc: any, cartItem) => {
+		return acc + cartItem.price * cartItem.quantity;
+	}, 0);
+
+	const data = await Cart.findOneAndUpdate(
+		{ userId },
+		{ cartItems: userCart.cartItems, totalPrice: newTotalPrice, totalQuantity: newTotalQuantity },
+		{ new: true },
+	);
+
 	return res.status(201).json({ status: "success", data });
 };
 
@@ -74,7 +88,20 @@ export const reduceItemsInCart = async (req: Request, res: Response) => {
 		return res.status(200).json({ status: "success", data });
 	}
 
-	const data = await userCart.save();
+	let newTotalQuantity = userCart.cartItems.reduce((acc: any, cartItem) => {
+		return acc + cartItem.quantity;
+	}, 0);
+
+	let newTotalPrice = userCart.cartItems.reduce((acc: any, cartItem) => {
+		return acc + cartItem.price * cartItem.quantity;
+	}, 0);
+
+	const data = await Cart.findOneAndUpdate(
+		{ userId },
+		{ cartItems: userCart.cartItems, totalPrice: newTotalPrice, totalQuantity: newTotalQuantity },
+		{ new: true },
+	);
+
 	return res.status(200).json({ status: "success", data });
 };
 

@@ -9,6 +9,8 @@ interface ICartItems extends Document {
 			price: number;
 		},
 	];
+	totalQuantity: number;
+	totalPrice: number;
 }
 
 const cartSchema = new Schema<ICartItems>({
@@ -20,6 +22,8 @@ const cartSchema = new Schema<ICartItems>({
 			price: { type: Number, default: 0 },
 		},
 	],
+	totalQuantity: { type: Number, default: 0 },
+	totalPrice: { type: Number, default: 0 },
 });
 
 const Cart = model("Cart", cartSchema);
