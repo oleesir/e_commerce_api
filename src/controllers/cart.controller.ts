@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Cart from "../database/models/cartModel";
+import {getTotal} from "../utils/getTotalPriceAndQuantity";
 
 /**
  * add items to cart
@@ -40,21 +41,65 @@ export const addItemToCart = async (req: Request, res: Response) => {
 		userCart.cartItems.push(newItem);
 	}
 
-	let newTotalQuantity = userCart.cartItems.reduce((acc: any, cartItem) => {
-		return acc + cartItem.quantity;
-	}, 0);
 
-	let newTotalPrice = userCart.cartItems.reduce((acc: any, cartItem) => {
-		return acc + cartItem.price * cartItem.quantity;
-	}, 0);
+	let result = getTotal(userCart.cartItems)
 
 	const data = await Cart.findOneAndUpdate(
 		{ userId },
-		{ cartItems: userCart.cartItems, totalPrice: newTotalPrice, totalQuantity: newTotalQuantity },
+		{ cartItems: userCart.cartItems, totalPrice: result.totalPrice, totalQuantity: result.totalQuantity},
 		{ new: true },
 	);
 
 	return res.status(201).json({ status: "success", data });
+};
+
+
+
+/**
+ * syncLocalStorageToDb
+ * @method syncLocalStorageToDb
+ * @memberof cartController
+ * @param {object} req
+ * @param {object} res
+ * @returns {(function|object)} Function next() or JSON object
+ */
+export const syncLocalStorageToDb = async (req: Request, res: Response) => {
+	const { cartItems } = req.body;
+	const { _id: userId } = (<any>req).user;
+	let cart;
+
+
+	let userCart = await Cart.findOne({ userId });
+
+	if (!userCart) {
+		cart = new Cart({ userId, cartItems, totalQuantity: 0, totalPrice: 0 });
+		userCart = await cart.save();
+
+
+		let result = getTotal(userCart.cartItems)
+
+		const data = await Cart.findOneAndUpdate(
+			{ userId },
+			{ cartItems:userCart.cartItems, totalPrice: result.totalPrice, totalQuantity: result.totalQuantity },
+			{ new: true },
+		);
+
+		return res.status(200).json({ status: "success", data });
+	}else {
+
+		let result = getTotal(userCart.cartItems)
+
+		const data = await Cart.findOneAndUpdate(
+			{ userId },
+			{ cartItems:cartItems, totalPrice: result.totalPrice, totalQuantity: result.totalQuantity },
+			{ new: true },
+		);
+
+		return res.status(200).json({ status: "success", data });
+
+	}
+
+
 };
 
 /**
@@ -88,17 +133,12 @@ export const reduceItemsInCart = async (req: Request, res: Response) => {
 		return res.status(200).json({ status: "success", data });
 	}
 
-	let newTotalQuantity = userCart.cartItems.reduce((acc: any, cartItem) => {
-		return acc + cartItem.quantity;
-	}, 0);
+	let result = getTotal(userCart.cartItems)
 
-	let newTotalPrice = userCart.cartItems.reduce((acc: any, cartItem) => {
-		return acc + cartItem.price * cartItem.quantity;
-	}, 0);
 
 	const data = await Cart.findOneAndUpdate(
 		{ userId },
-		{ cartItems: userCart.cartItems, totalPrice: newTotalPrice, totalQuantity: newTotalQuantity },
+		{ cartItems: userCart.cartItems, totalPrice: result.totalPrice, totalQuantity: result.totalQuantity },
 		{ new: true },
 	);
 
