@@ -2,7 +2,7 @@ import { CookieOptions, Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import { getGoogleUser } from "./../utils/googleAuthentication";
+import { getGoogleUser } from "../utils/googleAuthentication";
 import User from "../database/models/userModel";
 import { generateRefreshToken, generateToken } from "../utils/generateToken";
 import comparePassword from "../utils/comparePassword";
@@ -13,9 +13,9 @@ dotenv.config();
 const accessTokenCookieOptions: CookieOptions = {
 	maxAge: 1000 * 60 * 60 * 24,
 	httpOnly: true,
-	sameSite: "none",
-	// sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
-	secure: process.env.NODE_ENV === "development" ? false : true,
+	// sameSite: "none",
+	sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
+	secure: process.env.NODE_ENV !== "development" ,
 	domain: process.env.NODE_ENV === "development" ? "localhost" : "app-ecommerce-api.herokuapp.com",
 };
 
@@ -79,7 +79,7 @@ export const loginUser = async (req: Request, res: Response) => {
 
 	if (!findUser) return res.status(400).json({ status: "failed", message: "email or password is incorrect" });
 
-	const verifyUserPassword = await comparePassword(password, findUser.password);
+	const verifyUserPassword = comparePassword(password, findUser.password);
 
 	if (!verifyUserPassword) {
 		return res.status(401).json({ status: "failed", message: "email or password is incorrect" });
