@@ -1,6 +1,6 @@
 import Joi from "joi";
-import { Request, Response, NextFunction } from "express";
-import { roles } from "../utils/constants";
+import {NextFunction, Request, Response} from "express";
+import {roles} from "../utils/constants";
 
 export const validateRegisteredUser = (req: Request, res: Response, next: NextFunction) => {
 	const registerSchema = Joi.object().keys({
@@ -22,37 +22,37 @@ export const validateRegisteredUser = (req: Request, res: Response, next: NextFu
 				"string.pattern.empty": `"username" cannot be an empty field`,
 				"any.required": `"username" is a required.`,
 			}),
-		email: Joi.string().email({ minDomainSegments: 2 }).lowercase().required(),
+		email: Joi.string().email({minDomainSegments: 2}).lowercase().required(),
 		address: Joi.string().required().min(2).messages({
 			"string.pattern.empty": `"address" cannot be an empty field`,
 			"any.required": `"address" is a required.`,
 		}),
 		password: Joi.string().min(8).required(),
 	});
-	const result = registerSchema.validate(req.body, { abortEarly: false });
-	const { error } = result;
+	const result = registerSchema.validate(req.body, {abortEarly: false});
+	const {error} = result;
 	const valid = error == null;
 	if (!valid) {
-		const { details } = error;
+		const {details} = error;
 		const message = details.map((i) => i.message).join(",");
-		return res.status(400).json({ message });
+		return res.status(400).json({message});
 	}
 	next();
 };
 
 export const validateLoginUser = (req: Request, res: Response, next: NextFunction) => {
 	const loginSchema = Joi.object().keys({
-		email: Joi.string().email({ minDomainSegments: 2 }).lowercase().required(),
+		email: Joi.string().email({minDomainSegments: 2}).lowercase().required(),
 		password: Joi.string().min(8).required(),
 	});
-	const result = loginSchema.validate(req.body, { abortEarly: false });
-	const { error } = result;
+	const result = loginSchema.validate(req.body, {abortEarly: false});
+	const {error} = result;
 	const valid = error == null;
 	if (!valid) {
-		const { details } = error;
+		const {details} = error;
 		const message = details.map((i) => i.message).join(",");
 		if (message) {
-			return res.status(400).json({ message: "Email or password is incorrect" });
+			return res.status(400).json({message: "Email or password is incorrect"});
 		}
 	}
 	next();
@@ -79,16 +79,16 @@ export const validateUpdatedUser = (req: Request, res: Response, next: NextFunct
 				"string.pattern.empty": `"username" cannot be an empty field`,
 				"any.required": `"username" is a required.`,
 			}),
-		email: Joi.string().email({ minDomainSegments: 2 }).lowercase().required(),
+		email: Joi.string().email({minDomainSegments: 2}).lowercase().required(),
 		role: Joi.any().valid(...authRoles),
 	});
-	const result = registerSchema.validate(req.body, { abortEarly: false });
-	const { error } = result;
+	const result = registerSchema.validate(req.body, {abortEarly: false});
+	const {error} = result;
 	const valid = error == null;
 	if (!valid) {
-		const { details } = error;
+		const {details} = error;
 		const message = details.map((i) => i.message).join(",");
-		return res.status(400).json({ message });
+		return res.status(400).json({message});
 	}
 	next();
 };
@@ -113,16 +113,16 @@ export const validateUserProfile = (req: Request, res: Response, next: NextFunct
 				"string.pattern.empty": `"username" cannot be an empty field`,
 				"any.required": `"username" is a required.`,
 			}),
-		email: Joi.string().email({ minDomainSegments: 2 }).lowercase().required(),
+		email: Joi.string().email({minDomainSegments: 2}).lowercase().required(),
 		password: Joi.string().min(8).required(),
 	});
-	const result = registerSchema.validate(req.body, { abortEarly: false });
-	const { error } = result;
+	const result = registerSchema.validate(req.body, {abortEarly: false});
+	const {error} = result;
 	const valid = error == null;
 	if (!valid) {
-		const { details } = error;
+		const {details} = error;
 		const message = details.map((i) => i.message).join(",");
-		return res.status(400).json({ message });
+		return res.status(400).json({message});
 	}
 	next();
 };
@@ -164,13 +164,13 @@ export const validateCreateProduct = (req: Request, res: Response, next: NextFun
 			"any.required": `"stock" is a required.`,
 		}),
 	});
-	const result = registerSchema.validate(req.body, { abortEarly: false });
-	const { error } = result;
+	const result = registerSchema.validate(req.body, {abortEarly: false});
+	const {error} = result;
 	const valid = error == null;
 	if (!valid) {
-		const { details } = error;
+		const {details} = error;
 		const message = details.map((i) => i.message).join(",");
-		return res.status(400).json({ message });
+		return res.status(400).json({message});
 	}
 	next();
 };
@@ -198,13 +198,13 @@ export const validateUpdateProduct = (req: Request, res: Response, next: NextFun
 			"string.pattern.empty": `"stock" cannot be an empty field`,
 		}),
 	});
-	const result = registerSchema.validate(req.body, { abortEarly: false });
-	const { error } = result;
+	const result = registerSchema.validate(req.body, {abortEarly: false});
+	const {error} = result;
 	const valid = error == null;
 	if (!valid) {
-		const { details } = error;
+		const {details} = error;
 		const message = details.map((i) => i.message).join(",");
-		return res.status(400).json({ message });
+		return res.status(400).json({message});
 	}
 	next();
 };

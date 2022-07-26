@@ -1,13 +1,13 @@
-import { CookieOptions, Request, Response } from "express";
+import {CookieOptions, Request, Response} from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import { getGoogleUser } from "../utils/googleAuthentication";
+import {getGoogleOAuthTokens, getGoogleUser} from "../utils/googleAuthentication";
 import User from "../database/models/userModel";
-import { generateRefreshToken, generateToken } from "../utils/generateToken";
+import {generateRefreshToken, generateToken} from "../utils/generateToken";
 import comparePassword from "../utils/comparePassword";
-import { getGoogleOAuthTokens } from "../utils/googleAuthentication";
 import log from "../utils/logger";
+
 dotenv.config();
 
 const accessTokenCookieOptions: CookieOptions = {
@@ -15,7 +15,7 @@ const accessTokenCookieOptions: CookieOptions = {
 	httpOnly: true,
 	// sameSite: "none",
 	sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
-	secure: process.env.NODE_ENV !== "development" ,
+	secure: process.env.NODE_ENV !== "development",
 	domain: process.env.NODE_ENV === "development" ? "localhost" : "app-ecommerce-api.herokuapp.com",
 };
 
@@ -33,19 +33,19 @@ const refreshTokenCookieOptions: CookieOptions = {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const registerUser = async (req: Request, res: Response) => {
-	const { firstName, lastName, password, email, address } = req.body;
+	const {firstName, lastName, password, email, address} = req.body;
 
-	const findUser = await User.findOne({ email });
+	const findUser = await User.findOne({email});
 
-	if (findUser) return res.status(400).json({ status: "failed", message: "Email already exist" });
+	if (findUser) return res.status(400).json({status: "failed", message: "Email already exist"});
 
 	const hashed = bcrypt.hashSync(password, 10);
 
-	const newUser = new User({ firstName, lastName, email, address, password: hashed });
+	const newUser = new User({firstName, lastName, email, address, password: hashed});
 
 	const savedUser = await newUser.save();
 
-	const payload = { _id: savedUser._id, email: savedUser.email, role: savedUser.role.toLowerCase() };
+	const payload = {_id: savedUser._id, email: savedUser.email, role: savedUser.role.toLowerCase()};
 
 	const accessToken = generateToken(payload, process.env.SECRET_KEY as string);
 	const refreshToken = generateRefreshToken(payload, process.env.SECRET_KEY as string);
@@ -61,7 +61,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
 	res.cookie("accessToken", accessToken, accessTokenCookieOptions);
 	res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
-	return res.status(201).json({ status: "success", data });
+	return res.status(201).json({status: "success", data});
 };
 
 /**
@@ -73,16 +73,16 @@ export const registerUser = async (req: Request, res: Response) => {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const loginUser = async (req: Request, res: Response) => {
-	const { password, email } = req.body;
+	const {password, email} = req.body;
 
-	const findUser = await User.findOne({ email });
+	const findUser = await User.findOne({email});
 
-	if (!findUser) return res.status(400).json({ status: "failed", message: "email or password is incorrect" });
+	if (!findUser) return res.status(400).json({status: "failed", message: "email or password is incorrect"});
 
 	const verifyUserPassword = comparePassword(password, findUser.password);
 
 	if (!verifyUserPassword) {
-		return res.status(401).json({ status: "failed", message: "email or password is incorrect" });
+		return res.status(401).json({status: "failed", message: "email or password is incorrect"});
 	}
 
 	const payload = {
@@ -106,7 +106,7 @@ export const loginUser = async (req: Request, res: Response) => {
 
 	res.cookie("accessToken", accessToken, accessTokenCookieOptions);
 	res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
-	return res.status(200).json({ status: "success", data });
+	return res.status(200).json({status: "success", data});
 };
 
 /**
@@ -119,15 +119,15 @@ export const loginUser = async (req: Request, res: Response) => {
 export const loggedInUser = async (req: Request, res: Response) => {
 	const token: string = req.cookies.accessToken;
 
-	if (!token) return res.json({ status: "failed", data: null });
+	if (!token) return res.json({status: "failed", data: null});
 	return jwt.verify(token, process.env.SECRET_KEY as string, async (err: any, decoded: any) => {
 		if (err) {
-			return res.json({ status: "failed", data: null });
+			return res.json({status: "failed", data: null});
 		}
-		const foundUser = await User.findOne({ email: decoded.email });
+		const foundUser = await User.findOne({email: decoded.email});
 
 		if (!foundUser) {
-			return res.status(404).json({ status: "failed", message: "User does not exist" });
+			return res.status(404).json({status: "failed", message: "User does not exist"});
 		}
 
 		const data = {
@@ -138,7 +138,7 @@ export const loggedInUser = async (req: Request, res: Response) => {
 			role: foundUser?.role.toLowerCase(),
 		};
 
-		return res.json({ status: "success", data });
+		return res.json({status: "success", data});
 	});
 };
 
@@ -151,11 +151,11 @@ export const loggedInUser = async (req: Request, res: Response) => {
  */
 export const logoutUser = async (req: Request, res: Response) => {
 	const token: string = req.cookies.accessToken;
-	if (!token) return res.status(403).json({ status: "failed", error: "token not found" });
+	if (!token) return res.status(403).json({status: "failed", error: "token not found"});
 	return res
 		.clearCookie("accessToken", accessTokenCookieOptions)
 		.status(200)
-		.json({ message: "Successfully logged out" });
+		.json({message: "Successfully logged out"});
 };
 
 /**
@@ -171,9 +171,9 @@ export const googleOAuth = async (req: Request, res: Response) => {
 		const code = req.query.code as string;
 
 		//get the id and access token with the code
-		const { id_token, access_token } = await getGoogleOAuthTokens({ code });
+		const {id_token, access_token} = await getGoogleOAuthTokens({code});
 		//get user with tokens
-		const googleUser = await getGoogleUser({ id_token, access_token });
+		const googleUser = await getGoogleUser({id_token, access_token});
 
 		//upsert the user
 		const user = await User.findOneAndUpdate(
