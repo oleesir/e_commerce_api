@@ -54,51 +54,72 @@ export const addItemToCart = async (req: Request, res: Response) => {
 };
 
 
+// /**
+//  * syncLocalStorageToDb
+//  * @method syncLocalStorageToDb
+//  * @memberof cartController
+//  * @param {object} req
+//  * @param {object} res
+//  * @returns {(function|object)} Function next() or JSON object
+//  */
+// export const syncLocalStorageToDb = async (req: Request, res: Response) => {
+// 	const {cartItems} = req.body;
+// 	const {_id: userId} = (<any>req).user;
+// 	let cart;
+//
+//
+// 	let userCart = await Cart.findOne({userId});
+//
+// 	if (!userCart) {
+// 		cart = new Cart({userId, cartItems, totalQuantity: 0, totalPrice: 0});
+// 		userCart = await cart.save();
+//
+//
+// 		let result = getTotal(userCart.cartItems)
+//
+// 		const data = await Cart.findOneAndUpdate(
+// 			{userId},
+// 			{cartItems: userCart.cartItems, totalPrice: result.totalPrice, totalQuantity: result.totalQuantity},
+// 			{new: true},
+// 		);
+//
+// 		return res.status(200).json({status: "success", data});
+// 	} else {
+//
+// 		let result = getTotal(userCart.cartItems)
+//
+// 		const data = await Cart.findOneAndUpdate(
+// 			{userId},
+// 			{cartItems: cartItems, totalPrice: result.totalPrice, totalQuantity: result.totalQuantity},
+// 			{new: true},
+// 		);
+//
+// 		return res.status(200).json({status: "success", data});
+//
+// 	}
+//
+// };
+
 
 /**
- * syncLocalStorageToDb
- * @method syncLocalStorageToDb
+ * getUserCartItems
+ * @method getUserCartItems
  * @memberof cartController
  * @param {object} req
  * @param {object} res
  * @returns {(function|object)} Function next() or JSON object
  */
-export const syncLocalStorageToDb = async (req: Request, res: Response) => {
-	const { cartItems } = req.body;
-	const { _id: userId } = (<any>req).user;
-	let cart;
+export const getUserCartItems = async (req: Request, res: Response) => {
 
+	const {_id: userId} = (<any>req).user;
 
-	let userCart = await Cart.findOne({ userId });
+	const data = await Cart.findOne({userId});
 
-	if (!userCart) {
-		cart = new Cart({ userId, cartItems, totalQuantity: 0, totalPrice: 0 });
-		userCart = await cart.save();
-
-
-		let result = getTotal(userCart.cartItems)
-
-		const data = await Cart.findOneAndUpdate(
-			{ userId },
-			{ cartItems:userCart.cartItems, totalPrice: result.totalPrice, totalQuantity: result.totalQuantity },
-			{ new: true },
-		);
-
-		return res.status(200).json({ status: "success", data });
-	}else {
-
-		let result = getTotal(userCart.cartItems)
-
-		const data = await Cart.findOneAndUpdate(
-			{ userId },
-			{ cartItems:cartItems, totalPrice: result.totalPrice, totalQuantity: result.totalQuantity },
-			{ new: true },
-		);
-
-		return res.status(200).json({ status: "success", data });
-
+	if (!data) {
+		return res.status(404).json({status: "failed", message: "Cart does not exist"});
 	}
 
+	return res.status(200).json({status: "success", data});
 
 };
 

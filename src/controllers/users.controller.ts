@@ -1,6 +1,6 @@
-import { Request, Response } from "express";
+import {Request, Response} from "express";
 import bcrypt from "bcryptjs";
-import { generateToken } from "../utils/generateToken";
+import {generateToken} from "../utils/generateToken";
 import User from "../database/models/userModel";
 
 /**
@@ -21,7 +21,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
 		.limit(limit * 1)
 		.skip((page - 1) * limit)
 		.exec();
-	return res.status(200).json({ status: "success", data, totalPages: Math.ceil(count / limit), currentPage: page });
+	return res.status(200).json({status: "success", data, totalPages: Math.ceil(count / limit), currentPage: page});
 };
 
 /**
@@ -33,13 +33,13 @@ export const getAllUsers = async (req: Request, res: Response) => {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const getUser = async (req: Request, res: Response) => {
-	const { _id } = req.params;
-	const data = await User.findById({ _id });
+	const {_id} = req.params;
+	const data = await User.findById({_id});
 
 	if (!data) {
-		return res.status(404).json({ status: "failed", message: "User does not exist" });
+		return res.status(404).json({status: "failed", message: "User does not exist"});
 	}
-	return res.status(200).json({ status: "success", data });
+	return res.status(200).json({status: "success", data});
 };
 
 /**
@@ -51,13 +51,13 @@ export const getUser = async (req: Request, res: Response) => {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const updateUser = async (req: Request, res: Response) => {
-	const { _id } = req.params;
-	const { firstName, lastName, email, role, address } = req.body;
+	const {_id} = req.params;
+	const {firstName, lastName, email, role, address} = req.body;
 
-	const foundUser = await User.findById({ _id });
+	const foundUser = await User.findById({_id});
 
 	if (!foundUser) {
-		return res.status(404).json({ status: "failed", message: "User does not exist" });
+		return res.status(404).json({status: "failed", message: "User does not exist"});
 	}
 
 	foundUser.firstName = firstName || foundUser.firstName;
@@ -68,7 +68,7 @@ export const updateUser = async (req: Request, res: Response) => {
 
 	const data = await foundUser.save();
 
-	return res.status(200).json({ status: "success", data });
+	return res.status(200).json({status: "success", data});
 };
 
 /**
@@ -80,13 +80,13 @@ export const updateUser = async (req: Request, res: Response) => {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const updateProfile = async (req: Request, res: Response) => {
-	const { _id } = req.params;
-	const { firstName, lastName, email, password } = req.body;
+	const {_id} = req.params;
+	const {firstName, lastName, email, password} = req.body;
 
-	const foundUser = await User.findById({ _id });
+	const foundUser = await User.findById({_id});
 
 	if (!foundUser) {
-		return res.status(404).json({ status: "failed", message: "User does not exist" });
+		return res.status(404).json({status: "failed", message: "User does not exist"});
 	}
 
 	foundUser.firstName = firstName || foundUser.firstName;
@@ -124,7 +124,7 @@ export const updateProfile = async (req: Request, res: Response) => {
 			httpOnly: true,
 			// sameSite: 'lax',
 		})
-		.json({ status: "success", data });
+		.json({status: "success", data});
 };
 
 /**
@@ -136,15 +136,15 @@ export const updateProfile = async (req: Request, res: Response) => {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const deleteUser = async (req: Request, res: Response) => {
-	const { _id } = req.params;
+	const {_id} = req.params;
 
-	const foundUser = await User.findById({ _id });
+	const foundUser = await User.findById({_id});
 
 	if (!foundUser) {
-		return res.status(404).json({ status: "failed", message: "User does not exist" });
+		return res.status(404).json({status: "failed", message: "User does not exist"});
 	}
 
 	await foundUser.deleteOne();
 
-	return res.status(200).json({ status: "success", message: "Successfully deleted" });
+	return res.status(200).json({status: "success", message: "Successfully deleted"});
 };

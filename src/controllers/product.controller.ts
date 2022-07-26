@@ -1,8 +1,7 @@
-import { Request, Response } from "express";
+import {Request, Response} from "express";
 import cloudinary from "../utils/cloudinary";
-import { slugify } from "../utils/slugify";
+import {slugify} from "../utils/slugify";
 import Product from "../database/models/productModel";
-import { UploadApiResponse } from "cloudinary";
 
 /**
  * create a product
@@ -14,10 +13,10 @@ import { UploadApiResponse } from "cloudinary";
  */
 export const createProduct = async (req: Request, res: Response) => {
 	let imageFiles = req.files;
-	const { name, price, category, brand, countInStock, rating, numberOfReviews, description } = req.body;
+	const {name, price, category, brand, countInStock, rating, numberOfReviews, description} = req.body;
 
 	if (!imageFiles || !Array.isArray(imageFiles)) {
-		return res.status(404).json({ status: "failed", message: "Image not found" });
+		return res.status(404).json({status: "failed", message: "Image not found"});
 	}
 
 	let multiplePicturePromise = imageFiles.map((image: any) => cloudinary.uploader.upload(image.path));
@@ -44,7 +43,7 @@ export const createProduct = async (req: Request, res: Response) => {
 	});
 
 	const data = await product.save();
-	return res.status(201).json({ status: "success", data });
+	return res.status(201).json({status: "success", data});
 };
 
 /**
@@ -56,7 +55,7 @@ export const createProduct = async (req: Request, res: Response) => {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const searchProducts = async (req: Request, res: Response) => {
-	const { query } = req;
+	const {query} = req;
 
 	const pageSize = Number(query.pageSize) || Number(process.env.PAGE_SIZE);
 	const page = Number(query.page) || 1;
@@ -66,32 +65,32 @@ export const searchProducts = async (req: Request, res: Response) => {
 	const order = query.orders || "";
 	const searchQuery = query.query || "";
 
-	const categoryFilter = category && category !== "all" ? { category } : {};
-	const queryFilter = searchQuery && searchQuery !== "all" ? { name: { $regex: searchQuery, $options: "i" } } : {};
+	const categoryFilter = category && category !== "all" ? {category} : {};
+	const queryFilter = searchQuery && searchQuery !== "all" ? {name: {$regex: searchQuery, $options: "i"}} : {};
 	const priceFilter =
 		price && price !== "all"
 			? {
-					price: {
-						$gte: Number(price.split("-")[0]),
-						$lte: Number(price.split("-")[1]),
-					},
-			  }
+				price: {
+					$gte: Number(price.split("-")[0]),
+					$lte: Number(price.split("-")[1]),
+				},
+			}
 			: {};
-	const ratingsFilter = rating && rating !== "all" ? { $gte: Number(rating) } : {};
+	const ratingsFilter = rating && rating !== "all" ? {$gte: Number(rating)} : {};
 	const ordersFilter =
 		order && order === "featured"
-			? { featured: -1 }
+			? {featured: -1}
 			: order === "highest"
-			? { price: -1 }
-			: order === "lowest"
-			? { price: 1 }
-			: order === "newest"
-			? { createdAt: -1 }
-			: order === "toprated"
-			? { rating: -1 }
-			: { _id: -1 };
+				? {price: -1}
+				: order === "lowest"
+					? {price: 1}
+					: order === "newest"
+						? {createdAt: -1}
+						: order === "toprated"
+							? {rating: -1}
+							: {_id: -1};
 
-	const data = await Product.find({ ...categoryFilter, ...queryFilter, ...ratingsFilter, ...priceFilter })
+	const data = await Product.find({...categoryFilter, ...queryFilter, ...ratingsFilter, ...priceFilter})
 		.sort(ordersFilter)
 		.skip(pageSize * (page - 1))
 		.limit(pageSize);
@@ -103,7 +102,7 @@ export const searchProducts = async (req: Request, res: Response) => {
 		...priceFilter,
 	});
 
-	return res.status(200).json({ status: "success", countedData, data, page, pages: Math.ceil(countedData / pageSize) });
+	return res.status(200).json({status: "success", countedData, data, page, pages: Math.ceil(countedData / pageSize)});
 };
 
 /**
@@ -123,7 +122,7 @@ export const getAllProducts = async (req: Request, res: Response) => {
 		.limit(limit * 1)
 		.skip((page - 1) * limit)
 		.exec();
-	return res.status(200).json({ status: "success", data, totalPages: Math.ceil(count / limit), currentPage: page });
+	return res.status(200).json({status: "success", data, totalPages: Math.ceil(count / limit), currentPage: page});
 };
 
 /**
@@ -135,13 +134,13 @@ export const getAllProducts = async (req: Request, res: Response) => {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const getSingleProduct = async (req: Request, res: Response) => {
-	const { _id } = req.params;
-	const data = await Product.findById({ _id });
+	const {_id} = req.params;
+	const data = await Product.findById({_id});
 
 	if (!data) {
-		return res.status(404).json({ status: "failed", message: "Product does not exist" });
+		return res.status(404).json({status: "failed", message: "Product does not exist"});
 	}
-	return res.status(200).json({ status: "success", data });
+	return res.status(200).json({status: "success", data});
 };
 
 /**
@@ -153,12 +152,12 @@ export const getSingleProduct = async (req: Request, res: Response) => {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const updateProduct = async (req: Request, res: Response) => {
-	const { _id } = req.params;
-	const { name, description, category, brand, price, countInStock } = req.body;
-	const foundProduct = await Product.findById({ _id });
+	const {_id} = req.params;
+	const {name, description, category, brand, price, countInStock} = req.body;
+	const foundProduct = await Product.findById({_id});
 
 	if (!foundProduct) {
-		return res.status(404).json({ status: "failed", message: "Product does not exist" });
+		return res.status(404).json({status: "failed", message: "Product does not exist"});
 	}
 
 	foundProduct.name = name || foundProduct.name;
@@ -171,7 +170,7 @@ export const updateProduct = async (req: Request, res: Response) => {
 
 	const data = await foundProduct.save();
 
-	return res.status(200).json({ status: "success", data });
+	return res.status(200).json({status: "success", data});
 };
 
 /**
@@ -183,14 +182,14 @@ export const updateProduct = async (req: Request, res: Response) => {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const deleteProduct = async (req: Request, res: Response) => {
-	const { _id } = req.params;
-	const foundProduct = await Product.findById({ _id });
+	const {_id} = req.params;
+	const foundProduct = await Product.findById({_id});
 
 	if (!foundProduct) {
-		return res.status(404).json({ status: "failed", message: "Product does not exist" });
+		return res.status(404).json({status: "failed", message: "Product does not exist"});
 	}
 
 	await foundProduct.deleteOne();
 
-	return res.status(200).json({ status: "success", message: "Successfully deleted" });
+	return res.status(200).json({status: "success", message: "Successfully deleted"});
 };
