@@ -190,7 +190,12 @@ export const removeItemsInCart = async (req: Request, res: Response) => {
 	if (userCart.cartItems[itemIndex]) {
 		const nextCartItems = userCart?.cartItems.filter((cartItem: any) => cartItem?.productId.toString() !== productId);
 
-		const data = await Cart.findOneAndUpdate({ userId }, { cartItems: nextCartItems }, { new: true });
+		let result = getTotal(nextCartItems)
+
+		const data = await Cart.findOneAndUpdate(
+			{ userId },
+			{ cartItems: nextCartItems, totalPrice: result.totalPrice, totalQuantity: result.totalQuantity },
+			{ new: true },)
 
 		return res.status(200).json({ status: "success", data });
 	}
