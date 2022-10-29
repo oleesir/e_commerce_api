@@ -1,5 +1,11 @@
 import {Router} from "express";
-import {addItemToCart, getUserCartItems, reduceItemsInCart, removeItemsInCart} from "../controllers/cart.controller";
+import {
+    addItemToCart,
+    checkoutCart,
+    getUserCartItems,
+    reduceItemsInCart,
+    removeItemsInCart
+} from "../controllers/cart.controller";
 import asyncErrorHandler from "../middleware/asyncErrorHandler.middleware";
 import {roles} from "../utils/constants";
 import {authorizedRole, isAuth} from "../middleware/authorization.middleware";
@@ -14,6 +20,15 @@ router.post(
     authorizedRole([roles.ADMIN, roles.SELLER, roles.CUSTOMER]),
     asyncErrorHandler(reduceItemsInCart),
 );
+
+
+router.post(
+    "/checkout",
+    isAuth,
+    authorizedRole([roles.ADMIN, roles.SELLER, roles.CUSTOMER]),
+    asyncErrorHandler(checkoutCart),
+);
+
 
 
 router.get("/user_cart", isAuth, authorizedRole([roles.ADMIN, roles.SELLER, roles.CUSTOMER]), asyncErrorHandler(getUserCartItems));

@@ -33,7 +33,7 @@ export const createProduct = async (req: Request, res: Response) => {
 		name,
 		slug: slugify(name),
 		images: cloudinaryUrls,
-		price,
+		price: price * 100,
 		category,
 		brand,
 		countInStock,
@@ -165,7 +165,7 @@ export const updateProduct = async (req: Request, res: Response) => {
 	foundProduct.slug = (name && slugify(name)) || foundProduct.slug;
 	foundProduct.category = category || foundProduct.category;
 	foundProduct.brand = brand || foundProduct.brand;
-	foundProduct.price = price || foundProduct.price;
+	foundProduct.price = price * 100 || foundProduct.price;
 	foundProduct.countInStock = countInStock || foundProduct.countInStock;
 
 	const data = await foundProduct.save();

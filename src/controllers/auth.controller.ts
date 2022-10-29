@@ -13,7 +13,6 @@ dotenv.config();
 const accessTokenCookieOptions: CookieOptions = {
 	maxAge: 1000 * 60 * 60 * 24,
 	httpOnly: true,
-	// sameSite: "lax",
 	sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
 	secure: process.env.NODE_ENV !== "development",
 	domain: process.env.NODE_ENV === "development" ? "localhost" : "app-ecommerce-api.herokuapp.com",
@@ -208,9 +207,13 @@ export const googleOAuth = async (req: Request, res: Response) => {
 		res.cookie("accessToken", accessToken, accessTokenCookieOptions);
 		res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
 		//redirect back to client
-		return res.redirect(process.env.FRONTEND_URL as string);
+
+		const frontendUrl = process.env.NODE_ENV === "development" ? process.env.FRONTEND_URL as string :process.env.FRONTEND_URL_PROD as string;
+
+		return res.redirect(frontendUrl);
 	} catch (error) {
+		const frontendUrl = process.env.NODE_ENV === "development" ? process.env.FRONTEND_URL as string :process.env.FRONTEND_URL_PROD as string;
 		log.error(error, "Failed to authorize Google user");
-		return res.redirect(`${process.env.FRONTEND_URL as string}/oauth/error`);
+		return res.redirect(`${frontendUrl}/oauth/error`);
 	}
 };

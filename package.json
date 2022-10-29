@@ -25,16 +25,17 @@
 	},
 	"homepage": "https://github.com/oleesir/e_commerce_api#readme",
 	"dependencies": {
+		"@types/stripe": "^8.0.417",
 		"axios": "^0.27.2",
 		"bcryptjs": "^2.4.3",
 		"cloudinary": "^1.29.1",
 		"cookie-parser": "^1.4.6",
 		"cors": "^2.8.5",
+		"cross-env": "^7.0.3",
 		"dayjs": "^1.11.2",
 		"dotenv": "^10.0.0",
 		"express": "^4.17.2",
 		"joi": "^17.6.0",
-		"cross-env": "^7.0.3",
 		"jsonwebtoken": "^8.5.1",
 		"mongoose": "^6.1.2",
 		"morgan": "^1.10.0",
@@ -43,7 +44,8 @@
 		"pino": "^7.11.0",
 		"pino-pretty": "^7.6.1",
 		"qs": "^6.10.3",
-		"regenerator-runtime": "^0.13.9"
+		"regenerator-runtime": "^0.13.9",
+		"stripe": "^10.15.0"
 	},
 	"devDependencies": {
 		"@babel/cli": "^7.16.0",
