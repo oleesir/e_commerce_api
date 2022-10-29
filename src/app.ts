@@ -17,7 +17,7 @@ const port = process.env.PORT || 5000;
 
 connect(process.env.MONGO_URI);
 
-const allowOrigins = ["http://localhost:3000", "https://oliveshop.netlify.app","https://stripe.com"];
+const allowOrigins = ["http://localhost:3000", "https://oliveshop.netlify.app","https://checkout.stripe.com"];
 const corsOptions = {
 	credentials: true,
 	origin: (origin: any, callback: any) => {
