@@ -208,12 +208,9 @@ export const googleOAuth = async (req: Request, res: Response) => {
 		res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
 		//redirect back to client
 
-		const frontendUrl = process.env.NODE_ENV === "development" ? process.env.FRONTEND_URL as string :process.env.FRONTEND_URL_PROD as string;
-
-		return res.redirect(frontendUrl);
+		return res.redirect(process.env.FRONTEND_URL as string);
 	} catch (error) {
-		const frontendUrl = process.env.NODE_ENV === "development" ? process.env.FRONTEND_URL as string :process.env.FRONTEND_URL_PROD as string;
 		log.error(error, "Failed to authorize Google user");
-		return res.redirect(`${frontendUrl}/oauth/error`);
+		return res.redirect(`${process.env.FRONTEND_URL as string}/oauth/error`);
 	}
 };
