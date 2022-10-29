@@ -8,14 +8,16 @@ import handleError from "./middleware/errorHandler.middleware";
 import routes from "./routes/index";
 import log from "./utils/logger";
 import dotenv from "dotenv";
+
 dotenv.config();
+
 
 const app: Application = express();
 const port = process.env.PORT || 5000;
 
 connect(process.env.MONGO_URI);
 
-const allowOrigins = ["http://localhost:3000", "https://oliveshop.netlify.app"];
+const allowOrigins = ["http://localhost:3000", "https://oliveshop.netlify.app","https://checkout.stripe.com"];
 const corsOptions = {
 	credentials: true,
 	origin: (origin: any, callback: any) => {

@@ -58,3 +58,4 @@ const productSchema = new Schema<IProduct>(
 const Product = model("Product", productSchema);
 
 export default Product;
+
