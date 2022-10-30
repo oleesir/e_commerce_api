@@ -5,7 +5,6 @@ import {getTotal} from "../utils/getTotalPriceAndQuantity";
 import Stripe from 'stripe';
 
 
-
 // @ts-ignore
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -42,7 +41,7 @@ export const addItemToCart = async (req: Request, res: Response) => {
             ...cartItemToAdd,
             productId: cartItemToAdd.productId,
             quantity: cartItemToAdd.quantity + 1,
-            price: cartItemToAdd.price ,
+            price: cartItemToAdd.price,
         };
     } else {
         const newItem = {
@@ -59,7 +58,7 @@ export const addItemToCart = async (req: Request, res: Response) => {
 
     const data = await Cart.findOneAndUpdate(
         {userId},
-        {cartItems: userCart.cartItems, totalPrice: result.totalPrice , totalQuantity: result.totalQuantity},
+        {cartItems: userCart.cartItems, totalPrice: result.totalPrice, totalQuantity: result.totalQuantity},
         {new: true},
     );
 
@@ -214,7 +213,6 @@ export const removeItemsInCart = async (req: Request, res: Response) => {
 };
 
 
-
 /**
  * checkout
  * @method checkout
@@ -225,18 +223,18 @@ export const removeItemsInCart = async (req: Request, res: Response) => {
  */
 export const checkoutCart = async (req: Request, res: Response) => {
     const {_id: userId} = (<any>req).user;
-    const {_id:cartId} = req.body;
-    try{
-        let userCart = await Cart.findOne({userId,cartId});
+    const {_id: cartId} = req.body;
+    try {
+        let userCart = await Cart.findOne({userId, cartId});
 
 
         if (!userCart) {
             return res.status(404).json({status: "failed", message: "No cart found"});
         }
 
-        const cartItemsPromises = userCart?.cartItems.map( async (item: any) => {
+        const cartItemsPromises = userCart?.cartItems.map(async (item: any) => {
 
-            const eachProduct =  await Product.findOne({_id: item?.productId.toString()});
+            const eachProduct = await Product.findOne({_id: item?.productId.toString()});
 
             if (!eachProduct) {
                 throw new Error('product not found')
@@ -257,18 +255,18 @@ export const checkoutCart = async (req: Request, res: Response) => {
         const cartItems = await Promise.all(cartItemsPromises);
 
         const session = await stripe.checkout.sessions.create({
-            cancel_url: process.env.NODE_ENV === "development" ? `${process.env.FRONTEND_URL}/transaction_failed` : `${process.env.FRONTEND_URL_PROD}/transaction_failed`,
-            success_url: process.env.NODE_ENV === "development" ?`${process.env.FRONTEND_URL}/transaction_success` : `${process.env.FRONTEND_URL_PROD}/transaction_success`,
+            cancel_url: `${process.env.FRONTEND_URL as string}/transaction_failed`,
+            success_url: `${process.env.FRONTEND_URL as string}/transaction_success`,
             payment_method_types: ["card"],
             mode: "payment",
             line_items: cartItems
         })
 
-        return res.json({data:`${session.url}`});
+        return res.json({data: `${session.url}`});
 
 
-    }catch (e) {
-        console.log('ERROR',e)
+    } catch (e) {
+        console.log('ERROR', e)
     }
 
 }
