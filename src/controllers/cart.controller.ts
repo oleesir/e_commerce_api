@@ -3,6 +3,7 @@ import Cart from "../database/models/cartModel";
 import Product from "../database/models/productModel";
 import {getTotal} from "../utils/getTotalPriceAndQuantity";
 import Stripe from 'stripe';
+import User from "../database/models/userModel";
 
 
 // @ts-ignore
@@ -272,4 +273,25 @@ export const checkoutCart = async (req: Request, res: Response) => {
 }
 
 
+/**
+ * delete cart
+ * @method deleteCart
+ * @memberof usersController
+ * @param {object} req
+ * @param {object} res
+ * @returns {(function|object)} Function next() or JSON object
+ */
+export const deleteCart = async (req: Request, res: Response) => {
+    const {_id: userId} = (<any>req).user;
+    const {_id: cartId} = req.params;
 
+        let foundCart  = await Cart.findOne({userId, cartId});
+
+    if (!foundCart) {
+        return res.status(404).json({status: "failed", message: "Cart does not exist"});
+    }
+
+    await foundCart.deleteOne();
+
+    return res.status(200).json({status: "success", message: "Successfully deleted"});
+};

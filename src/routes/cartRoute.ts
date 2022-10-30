@@ -2,6 +2,7 @@ import {Router} from "express";
 import {
     addItemToCart,
     checkoutCart,
+    deleteCart,
     getUserCartItems,
     reduceItemsInCart,
     removeItemsInCart
@@ -30,14 +31,20 @@ router.post(
 );
 
 
-
 router.get("/user_cart", isAuth, authorizedRole([roles.ADMIN, roles.SELLER, roles.CUSTOMER]), asyncErrorHandler(getUserCartItems));
 
 router.delete(
     "/remove/:productId",
     isAuth,
     authorizedRole([roles.ADMIN, roles.SELLER, roles.CUSTOMER]),
-    asyncErrorHandler(removeItemsInCart),
+    asyncErrorHandler(removeItemsInCart));
+
+
+router.delete(
+    "/delete_cart/:cartId",
+    isAuth,
+    authorizedRole([roles.ADMIN, roles.SELLER, roles.CUSTOMER]),
+    asyncErrorHandler(deleteCart),
 );
 
 export default router;
