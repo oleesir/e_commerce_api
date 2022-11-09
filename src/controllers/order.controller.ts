@@ -56,5 +56,27 @@ const subTotal = userCart?.totalPrice
     const data = await order.save();
     return res.status(201).json({status: "success", data});
 
+};
+
+
+/**
+ * getUserOrder
+ * @method getUserCartItems
+ * @memberof cartController
+ * @param {object} req
+ * @param {object} res
+ * @returns {(function|object)} Function next() or JSON object
+ */
+export const getUserOrder = async (req: Request, res: Response) => {
+
+    const {_id} = req.params;
+
+    const data = await Order.findById({_id});
+
+    if (!data) {
+        return res.status(404).json({status: "failed", message: "Order does not exist"});
+    }
+
+    return res.status(200).json({status: "success", data});
 
 };
