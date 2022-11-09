@@ -12,3 +12,5 @@ export const getTotal =(items:any)=>{
         totalPrice
     }
 }
+
+
