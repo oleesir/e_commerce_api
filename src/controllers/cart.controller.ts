@@ -287,6 +287,7 @@ export const deleteCart = async (req: Request, res: Response) => {
 
         let foundCart  = await Cart.findOne({userId, cartId});
 
+
     if (!foundCart) {
         return res.status(404).json({status: "failed", message: "Cart does not exist"});
     }
