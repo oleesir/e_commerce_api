@@ -3,6 +3,7 @@ import Cart from "../database/models/cartModel";
 import User from "../database/models/userModel";
 import Order from "../database/models/orderModel";
 
+
 /**
  * create order
  * @method createOrder
@@ -17,39 +18,32 @@ export const createOrder = async (req: Request, res: Response) => {
         address,
         phoneNumber,
         country,
+        city,
         paymentMethod,
-      } = req.body;
+    } = req.body;
     const {_id: userId} = (<any>req).user;
 
-    let userCart = await Cart.findOne({userId,cartId});
-    let user = await User.findById({_id:userId});
+    let userCart = await Cart.findOne({userId, cartId});
+    let user = await User.findById({_id: userId});
 
     if (!userCart) {
         return res.status(404).json({status: "failed", message: "No cart found"});
     }
 
-const subTotal = userCart?.totalPrice
-
-    //calculate total price with tax and shipping
-    const totalCost =(tax:number,shipping:number)=>{
-        const taxInCents = tax * 100;
-        const shippingCostInCents = shipping * 100;
-
-       return taxInCents + shippingCostInCents + subTotal;
-    }
 
     const order = new Order({
         userId,
-        cartId,
-        address:user?.address || address,
-        email:user?.email,
+        address: address || user?.address,
+        email: user?.email,
         country,
-        phoneNumber,
+        city,
+        phoneNumber: phoneNumber || user?.phoneNumber,
         paymentMethod,
-        taxPrice:parseInt(process.env.TAX_PRICE as string, 10) * 100,
-        shippingPrice:parseInt(process.env.SHIPPING_PRICE as string, 10) * 100,
-        totalPrice:totalCost(parseInt(process.env.TAX_PRICE as string, 10),parseInt(process.env.SHIPPING_PRICE as string, 10)),
-
+        cartItems: userCart.cartItems,
+        totalQuantity: userCart?.totalQuantity,
+        totalPrice: userCart?.totalPrice,
+        totalTax: userCart?.totalTax,
+        totalPriceAfterTax: userCart?.totalPriceAfterTax,
     })
 
 

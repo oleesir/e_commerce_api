@@ -3,7 +3,6 @@ import Cart from "../database/models/cartModel";
 import Product from "../database/models/productModel";
 import {getTotal} from "../utils/getTotalPriceAndQuantity";
 import Stripe from 'stripe';
-import User from "../database/models/userModel";
 
 
 // @ts-ignore
@@ -19,16 +18,38 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
  */
 export const addItemToCart = async (req: Request, res: Response) => {
     const {productId, price} = req.body;
-
     const {_id: userId} = (<any>req).user;
     let cart;
 
     let userCart = await Cart.findOne({userId});
 
+
     if (!userCart) {
-        cart = new Cart({userId, cartItems: [], totalQuantity: 0, totalPrice: 0});
+        cart = new Cart({
+            userId,
+            cartItems: [],
+            totalQuantity: 0,
+            totalPrice: 0,
+            taxPrice: 0,
+            totalPriceAfterTax: 0,
+            grandTotal: 0
+        });
         userCart = await cart.save();
     }
+
+
+    const vatFunc = (priceInput: string) => {
+        const priceInCents = parseInt(priceInput, 10) * 100;
+        const vatInCents = priceInCents * parseFloat(process.env.TAX_PRICE as string);
+        const getVat = priceInCents + vatInCents;
+        return {
+            vatInCents,
+            getVat
+        }
+    }
+
+
+    const taxValue = vatFunc(price)
 
     const itemIndex = userCart?.cartItems.findIndex((cartItem) => {
         return cartItem?.productId.toString() === productId;
@@ -38,18 +59,24 @@ export const addItemToCart = async (req: Request, res: Response) => {
     if (itemIndex >= 0) {
         const cartItemToAdd = userCart.cartItems[itemIndex];
 
+
         userCart.cartItems[itemIndex] = {
             ...cartItemToAdd,
             productId: cartItemToAdd.productId,
             quantity: cartItemToAdd.quantity + 1,
             price: cartItemToAdd.price,
+            taxPrice: cartItemToAdd.taxPrice,
+            priceAfterTax: cartItemToAdd.priceAfterTax
         };
     } else {
         const newItem = {
             productId,
             quantity: 1,
-            price: price * 100
+            price: price * 100,
+            taxPrice: taxValue.vatInCents,
+            priceAfterTax: taxValue.getVat,
         };
+
         userCart.cartItems.push(newItem);
     }
 
@@ -57,62 +84,21 @@ export const addItemToCart = async (req: Request, res: Response) => {
     let result = getTotal(userCart.cartItems)
 
 
+
     const data = await Cart.findOneAndUpdate(
         {userId},
-        {cartItems: userCart.cartItems, totalPrice: result.totalPrice, totalQuantity: result.totalQuantity},
+        {
+            cartItems: userCart.cartItems,
+            totalPrice: result.totalPrice,
+            totalQuantity: result.totalQuantity,
+            totalTax: result.totalTax,
+            totalPriceAfterTax: result.totalPriceAfterTax,
+        },
         {new: true},
     );
 
     return res.status(201).json({status: "success", data});
 };
-
-
-// /**
-//  * syncLocalStorageToDb
-//  * @method syncLocalStorageToDb
-//  * @memberof cartController
-//  * @param {object} req
-//  * @param {object} res
-//  * @returns {(function|object)} Function next() or JSON object
-//  */
-// export const syncLocalStorageToDb = async (req: Request, res: Response) => {
-// 	const {cartItems} = req.body;
-// 	const {_id: userId} = (<any>req).user;
-// 	let cart;
-//
-//
-// 	let userCart = await Cart.findOne({userId});
-//
-// 	if (!userCart) {
-// 		cart = new Cart({userId, cartItems, totalQuantity: 0, totalPrice: 0});
-// 		userCart = await cart.save();
-//
-//
-// 		let result = getTotal(userCart.cartItems)
-//
-// 		const data = await Cart.findOneAndUpdate(
-// 			{userId},
-// 			{cartItems: userCart.cartItems, totalPrice: result.totalPrice, totalQuantity: result.totalQuantity},
-// 			{new: true},
-// 		);
-//
-// 		return res.status(200).json({status: "success", data});
-// 	} else {
-//
-// 		let result = getTotal(userCart.cartItems)
-//
-// 		const data = await Cart.findOneAndUpdate(
-// 			{userId},
-// 			{cartItems: cartItems, totalPrice: result.totalPrice, totalQuantity: result.totalQuantity},
-// 			{new: true},
-// 		);
-//
-// 		return res.status(200).json({status: "success", data});
-//
-// 	}
-//
-// };
-
 
 /**
  * getUserCartItems
@@ -228,15 +214,13 @@ export const checkoutCart = async (req: Request, res: Response) => {
     try {
         let userCart = await Cart.findOne({userId, cartId});
 
-
         if (!userCart) {
             return res.status(404).json({status: "failed", message: "No cart found"});
         }
 
-        const cartItemsPromises = userCart?.cartItems.map(async (item: any) => {
-
+        const cartItemsPromises = userCart?.cartItems.map(async (item: any, i: any) => {
             const eachProduct = await Product.findOne({_id: item?.productId.toString()});
-
+            userCart = await Cart.findOne({userId, cartId});
             if (!eachProduct) {
                 throw new Error('product not found')
             }
@@ -247,13 +231,15 @@ export const checkoutCart = async (req: Request, res: Response) => {
                     product_data: {
                         name: eachProduct.name
                     },
-                    unit_amount: eachProduct.price,
+                    unit_amount: item.priceAfterTax,
                 },
-                quantity: item.quantity
+                quantity: item.quantity,
+
             }
         })
 
         const cartItems = await Promise.all(cartItemsPromises);
+
 
         const session = await stripe.checkout.sessions.create({
             cancel_url: `${process.env.FRONTEND_URL as string}/transaction_failed`,
@@ -261,6 +247,7 @@ export const checkoutCart = async (req: Request, res: Response) => {
             payment_method_types: ["card"],
             mode: "payment",
             line_items: cartItems
+
         })
 
         return res.json({data: `${session.url}`});
@@ -285,8 +272,7 @@ export const deleteCart = async (req: Request, res: Response) => {
     const {_id: userId} = (<any>req).user;
     const {_id: cartId} = req.params;
 
-        let foundCart  = await Cart.findOne({userId, cartId});
-
+    let foundCart = await Cart.findOne({userId, cartId});
 
     if (!foundCart) {
         return res.status(404).json({status: "failed", message: "Cart does not exist"});

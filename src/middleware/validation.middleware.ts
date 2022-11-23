@@ -28,6 +28,7 @@ export const validateRegisteredUser = (req: Request, res: Response, next: NextFu
 			"any.required": `"address" is a required.`,
 		}),
 		password: Joi.string().min(8).required(),
+		phoneNumber:Joi.string().length(11).pattern(/^[0-9]+$/)
 	});
 	const result = registerSchema.validate(req.body, {abortEarly: false});
 	const {error} = result;
