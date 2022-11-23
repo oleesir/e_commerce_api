@@ -32,7 +32,7 @@ const refreshTokenCookieOptions: CookieOptions = {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const registerUser = async (req: Request, res: Response) => {
-	const {firstName, lastName, password, email, address} = req.body;
+	const {firstName, lastName, password, email, address,phoneNumber} = req.body;
 
 	const findUser = await User.findOne({email});
 
@@ -40,7 +40,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
 	const hashed = bcrypt.hashSync(password, 10);
 
-	const newUser = new User({firstName, lastName, email, address, password: hashed});
+	const newUser = new User({firstName, lastName, email, address,phoneNumber, password: hashed});
 
 	const savedUser = await newUser.save();
 
@@ -55,6 +55,7 @@ export const registerUser = async (req: Request, res: Response) => {
 		lastName: savedUser?.lastName,
 		email: savedUser?.email.toLowerCase(),
 		address: savedUser?.address,
+		phoneNumber:savedUser?.phoneNumber,
 		role: savedUser?.role.toLowerCase(),
 	};
 
@@ -89,6 +90,7 @@ export const loginUser = async (req: Request, res: Response) => {
 		firstName: findUser?.firstName,
 		lastName: findUser?.lastName,
 		email: findUser?.email.toLowerCase(),
+		phoneNumber:findUser?.phoneNumber,
 		role: findUser?.role.toLowerCase(),
 	};
 	const accessToken = generateToken(payload, process.env.SECRET_KEY as string);
@@ -100,6 +102,7 @@ export const loginUser = async (req: Request, res: Response) => {
 		lastName: findUser?.lastName,
 		email: findUser?.email.toLowerCase(),
 		address: findUser?.address,
+		phoneNumber:findUser?.phoneNumber,
 		role: findUser?.role.toLowerCase(),
 	};
 
@@ -134,6 +137,7 @@ export const loggedInUser = async (req: Request, res: Response) => {
 			firstName: foundUser?.lastName,
 			address: foundUser?.address,
 			email: foundUser?.email.toLowerCase(),
+			phoneNumber:foundUser?.phoneNumber,
 			role: foundUser?.role.toLowerCase(),
 		};
 
