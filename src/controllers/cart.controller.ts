@@ -8,6 +8,41 @@ import Stripe from 'stripe';
 // @ts-ignore
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+
+
+
+/**
+ * create cart
+ * @method createCart
+ * @memberof cartController
+ * @param {object} req
+ * @param {object} res
+ * @returns {(function|object)} Function next() or JSON object
+ */
+export const createCart = async (req: Request, res: Response) => {
+    const {_id: userId} = (<any>req).user;
+    let cart;
+
+    let data = await Cart.findOne({userId});
+
+    if (!data) {
+        cart = new Cart({
+            userId,
+            cartItems: [],
+            totalQuantity: 0,
+            totalPrice: 0,
+            taxPrice: 0,
+            totalPriceAfterTax: 0,
+            grandTotal: 0
+        });
+        data = await cart.save();
+    }
+
+    return res.status(201).json({status: "success", data});
+};
+
+
+
 /**
  * add items to cart
  * @method addItemToCart
@@ -82,8 +117,6 @@ export const addItemToCart = async (req: Request, res: Response) => {
 
 
     let result = getTotal(userCart.cartItems)
-
-
 
     const data = await Cart.findOneAndUpdate(
         {userId},
