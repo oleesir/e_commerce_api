@@ -11,16 +11,16 @@ import log from "../utils/logger";
 dotenv.config();
 
 const accessTokenCookieOptions: CookieOptions = {
-	maxAge: 1000 * 60 * 60 * 24,
-	httpOnly: true,
-	sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
-	secure: process.env.NODE_ENV !== "development",
-	domain: process.env.NODE_ENV === "development" ? "localhost" : "app-ecommerce-api.herokuapp.com",
+    maxAge: 1000 * 60 * 60 * 24,
+    httpOnly: true,
+    sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
+    secure: process.env.NODE_ENV !== "development",
+    domain: process.env.NODE_ENV === "development" ? "localhost" : "app-ecommerce-api.herokuapp.com",
 };
 
 const refreshTokenCookieOptions: CookieOptions = {
-	...accessTokenCookieOptions,
-	maxAge: 3.154e10,
+    ...accessTokenCookieOptions,
+    maxAge: 3.154e10,
 };
 
 /**
@@ -32,36 +32,44 @@ const refreshTokenCookieOptions: CookieOptions = {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const registerUser = async (req: Request, res: Response) => {
-	const {firstName, lastName, password, email, address,phoneNumber} = req.body;
+    const {firstName, lastName, password, email, address, callingCode, phoneNumber} = req.body;
 
-	const findUser = await User.findOne({email});
+    const findUser = await User.findOne({email});
 
-	if (findUser) return res.status(400).json({status: "failed", message: "Email already exist"});
+    if (findUser) return res.status(400).json({status: "failed", message: "Email already exist"});
 
-	const hashed = bcrypt.hashSync(password, 10);
+    const hashed = bcrypt.hashSync(password, 10);
 
-	const newUser = new User({firstName, lastName, email, address,phoneNumber, password: hashed});
+    const newUser = new User({firstName, lastName, email, address, callingCode, phoneNumber, password: hashed});
 
-	const savedUser = await newUser.save();
+    const savedUser = await newUser.save();
 
-	const payload = {_id: savedUser._id, email: savedUser.email, role: savedUser.role.toLowerCase()};
+    const payload = {
+        _id: savedUser._id,
+        email: savedUser.email,
+        address: savedUser.address,
+        callingCode: savedUser.callingCode,
+        phoneNumber: savedUser.phoneNumber,
+        role: savedUser.role.toLowerCase()
+    };
 
-	const accessToken = generateToken(payload, process.env.SECRET_KEY as string);
-	const refreshToken = generateRefreshToken(payload, process.env.SECRET_KEY as string);
+    const accessToken = generateToken(payload, process.env.SECRET_KEY as string);
+    const refreshToken = generateRefreshToken(payload, process.env.SECRET_KEY as string);
 
-	const data = {
-		_id: savedUser?._id,
-		firstName: savedUser?.firstName,
-		lastName: savedUser?.lastName,
-		email: savedUser?.email.toLowerCase(),
-		address: savedUser?.address,
-		phoneNumber:savedUser?.phoneNumber,
-		role: savedUser?.role.toLowerCase(),
-	};
+    const data = {
+        _id: savedUser?._id,
+        firstName: savedUser?.firstName,
+        lastName: savedUser?.lastName,
+        email: savedUser?.email.toLowerCase(),
+        address: savedUser?.address,
+        callingCode: savedUser?.callingCode,
+        phoneNumber: savedUser?.phoneNumber,
+        role: savedUser?.role.toLowerCase(),
+    };
 
-	res.cookie("accessToken", accessToken, accessTokenCookieOptions);
-	res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
-	return res.status(201).json({status: "success", data});
+    res.cookie("accessToken", accessToken, accessTokenCookieOptions);
+    res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
+    return res.status(201).json({status: "success", data});
 };
 
 /**
@@ -73,42 +81,45 @@ export const registerUser = async (req: Request, res: Response) => {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const loginUser = async (req: Request, res: Response) => {
-	const {password, email} = req.body;
+    const {password, email} = req.body;
 
-	const findUser = await User.findOne({email});
+    const findUser = await User.findOne({email});
 
-	if (!findUser) return res.status(400).json({status: "failed", message: "email or password is incorrect"});
+    if (!findUser) return res.status(400).json({status: "failed", message: "email or password is incorrect"});
 
-	const verifyUserPassword = comparePassword(password, findUser.password);
+    const verifyUserPassword = comparePassword(password, findUser.password);
 
-	if (!verifyUserPassword) {
-		return res.status(401).json({status: "failed", message: "email or password is incorrect"});
-	}
+    if (!verifyUserPassword) {
+        return res.status(401).json({status: "failed", message: "email or password is incorrect"});
+    }
 
-	const payload = {
-		_id: findUser?._id,
-		firstName: findUser?.firstName,
-		lastName: findUser?.lastName,
-		email: findUser?.email.toLowerCase(),
-		phoneNumber:findUser?.phoneNumber,
-		role: findUser?.role.toLowerCase(),
-	};
-	const accessToken = generateToken(payload, process.env.SECRET_KEY as string);
-	const refreshToken = generateRefreshToken(payload, process.env.SECRET_KEY as string);
+    const payload = {
+        _id: findUser?._id,
+        firstName: findUser?.firstName,
+        lastName: findUser?.lastName,
+        email: findUser?.email.toLowerCase(),
+        address: findUser?.address,
+        callingCode: findUser?.callingCode,
+        phoneNumber: findUser?.phoneNumber,
+        role: findUser?.role.toLowerCase(),
+    };
+    const accessToken = generateToken(payload, process.env.SECRET_KEY as string);
+    const refreshToken = generateRefreshToken(payload, process.env.SECRET_KEY as string);
 
-	const data = {
-		_id: findUser?._id,
-		firstName: findUser?.firstName,
-		lastName: findUser?.lastName,
-		email: findUser?.email.toLowerCase(),
-		address: findUser?.address,
-		phoneNumber:findUser?.phoneNumber,
-		role: findUser?.role.toLowerCase(),
-	};
+    const data = {
+        _id: findUser?._id,
+        firstName: findUser?.firstName,
+        lastName: findUser?.lastName,
+        email: findUser?.email.toLowerCase(),
+        callingCode: findUser?.callingCode,
+        address: findUser?.address,
+        phoneNumber: findUser?.phoneNumber,
+        role: findUser?.role.toLowerCase(),
+    };
 
-	res.cookie("accessToken", accessToken, accessTokenCookieOptions);
-	res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
-	return res.status(200).json({status: "success", data});
+    res.cookie("accessToken", accessToken, accessTokenCookieOptions);
+    res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
+    return res.status(200).json({status: "success", data});
 };
 
 /**
@@ -119,30 +130,31 @@ export const loginUser = async (req: Request, res: Response) => {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const loggedInUser = async (req: Request, res: Response) => {
-	const token: string = req.cookies.accessToken;
+    const token: string = req.cookies.accessToken;
 
-	if (!token) return res.json({status: "failed", data: null});
-	return jwt.verify(token, process.env.SECRET_KEY as string, async (err: any, decoded: any) => {
-		if (err) {
-			return res.json({status: "failed", data: null});
-		}
-		const foundUser = await User.findOne({email: decoded.email});
+    if (!token) return res.json({status: "failed", data: null});
+    return jwt.verify(token, process.env.SECRET_KEY as string, async (err: any, decoded: any) => {
+        if (err) {
+            return res.json({status: "failed", data: null});
+        }
+        const foundUser = await User.findOne({email: decoded.email});
 
-		if (!foundUser) {
-			return res.status(404).json({status: "failed", message: "User does not exist"});
-		}
+        if (!foundUser) {
+            return res.status(404).json({status: "failed", message: "User does not exist"});
+        }
 
-		const data = {
-			_id: foundUser?._id,
-			firstName: foundUser?.lastName,
-			address: foundUser?.address,
-			email: foundUser?.email.toLowerCase(),
-			phoneNumber:foundUser?.phoneNumber,
-			role: foundUser?.role.toLowerCase(),
-		};
+        const data = {
+            _id: foundUser?._id,
+            firstName: foundUser?.lastName,
+            address: foundUser?.address,
+            email: foundUser?.email.toLowerCase(),
+            callingCode: foundUser?.callingCode,
+            phoneNumber: foundUser?.phoneNumber,
+            role: foundUser?.role.toLowerCase(),
+        };
 
-		return res.json({status: "success", data});
-	});
+        return res.json({status: "success", data});
+    });
 };
 
 /**
@@ -153,12 +165,12 @@ export const loggedInUser = async (req: Request, res: Response) => {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const logoutUser = async (req: Request, res: Response) => {
-	const token: string = req.cookies.accessToken;
-	if (!token) return res.status(403).json({status: "failed", error: "token not found"});
-	return res
-		.clearCookie("accessToken", accessTokenCookieOptions)
-		.status(200)
-		.json({message: "Successfully logged out"});
+    const token: string = req.cookies.accessToken;
+    if (!token) return res.status(403).json({status: "failed", error: "token not found"});
+    return res
+        .clearCookie("accessToken", accessTokenCookieOptions)
+        .status(200)
+        .json({message: "Successfully logged out"});
 };
 
 /**
@@ -169,52 +181,54 @@ export const logoutUser = async (req: Request, res: Response) => {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const googleOAuth = async (req: Request, res: Response) => {
-	try {
-		//get the code from qs
-		const code = req.query.code as string;
+    try {
+        //get the code from qs
+        const code = req.query.code as string;
 
-		//get the id and access token with the code
-		const {id_token, access_token} = await getGoogleOAuthTokens({code});
-		//get user with tokens
-		const googleUser = await getGoogleUser({id_token, access_token});
+        //get the id and access token with the code
+        const {id_token, access_token} = await getGoogleOAuthTokens({code});
+        //get user with tokens
+        const googleUser = await getGoogleUser({id_token, access_token});
 
-		//upsert the user
-		const user = await User.findOneAndUpdate(
-			{
-				email: googleUser.email,
-			},
-			{
-				email: googleUser.email.toLowerCase(),
-				firstName: googleUser.given_name,
-				lastName: googleUser.family_name,
-			},
-			{
-				upsert: true,
-				new: true,
-			},
-		);
+        //upsert the user
+        const user = await User.findOneAndUpdate(
+            {
+                email: googleUser.email,
+            },
+            {
+                email: googleUser.email.toLowerCase(),
+                firstName: googleUser.given_name,
+                lastName: googleUser.family_name,
+            },
+            {
+                upsert: true,
+                new: true,
+            },
+        );
 
-		//create access and refresh tokens
-		const payload = {
-			_id: user?._id,
-			firstName: user?.firstName,
-			lastName: user?.lastName,
-			address: user?.address,
-			email: user?.email.toLowerCase(),
-			role: user?.role.toLowerCase(),
-		};
+        //create access and refresh tokens
+        const payload = {
+            _id: user?._id,
+            firstName: user?.firstName,
+            lastName: user?.lastName,
+            address: user?.address,
+            callingCode: user?.callingCode,
+            phoneNumber: user?.phoneNumber,
+            email: user?.email.toLowerCase(),
+            role: user?.role.toLowerCase(),
+        };
 
-		const accessToken = generateToken(payload, process.env.SECRET_KEY as string);
-		const refreshToken = generateRefreshToken(payload, process.env.SECRET_KEY as string);
+        const accessToken = generateToken(payload, process.env.SECRET_KEY as string);
+        const refreshToken = generateRefreshToken(payload, process.env.SECRET_KEY as string);
 
-		//set cookies
-		res.cookie("accessToken", accessToken, accessTokenCookieOptions);
-		res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
-		//redirect back to client
+        //set cookies
+        res.cookie("accessToken", accessToken, accessTokenCookieOptions);
+        res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
+        //redirect back to client
 
-		return res.redirect(process.env.FRONTEND_URL as string);
-	} catch (error) {
-		log.error(error, "Failed to authorize Google user");
-		return res.redirect(`${process.env.FRONTEND_URL as string}/oauth/error`);
-	}
+        return res.redirect(process.env.FRONTEND_URL as string);
+    } catch (error) {
+        log.error(error, "Failed to authorize Google user");
+        return res.redirect(`${process.env.FRONTEND_URL as string}/oauth/error`);
+    }
 };
