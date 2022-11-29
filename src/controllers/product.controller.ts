@@ -46,64 +46,7 @@ export const createProduct = async (req: Request, res: Response) => {
 	return res.status(201).json({status: "success", data});
 };
 
-/**
- * search for products
- * @method searchProducts
- * @memberof productController
- * @param {object} req
- * @param {object} res
- * @returns {(function|object)} Function next() or JSON object
- */
-export const searchProducts = async (req: Request, res: Response) => {
-	const {query} = req;
 
-	const pageSize = Number(query.pageSize) || Number(process.env.PAGE_SIZE);
-	const page = Number(query.page) || 1;
-	const category = query.category || "";
-	const price = (query.price as string) || ("" as string);
-	const rating = query.rating || "";
-	const order = query.orders || "";
-	const searchQuery = query.query || "";
-
-	const categoryFilter = category && category !== "all" ? {category} : {};
-	const queryFilter = searchQuery && searchQuery !== "all" ? {name: {$regex: searchQuery, $options: "i"}} : {};
-	const priceFilter =
-		price && price !== "all"
-			? {
-				price: {
-					$gte: Number(price.split("-")[0]),
-					$lte: Number(price.split("-")[1]),
-				},
-			}
-			: {};
-	const ratingsFilter = rating && rating !== "all" ? {$gte: Number(rating)} : {};
-	const ordersFilter =
-		order && order === "featured"
-			? {featured: -1}
-			: order === "highest"
-				? {price: -1}
-				: order === "lowest"
-					? {price: 1}
-					: order === "newest"
-						? {createdAt: -1}
-						: order === "toprated"
-							? {rating: -1}
-							: {_id: -1};
-
-	const data = await Product.find({...categoryFilter, ...queryFilter, ...ratingsFilter, ...priceFilter})
-		.sort(ordersFilter)
-		.skip(pageSize * (page - 1))
-		.limit(pageSize);
-
-	const countedData = await Product.countDocuments({
-		...categoryFilter,
-		...queryFilter,
-		...ratingsFilter,
-		...priceFilter,
-	});
-
-	return res.status(200).json({status: "success", countedData, data, page, pages: Math.ceil(countedData / pageSize)});
-};
 
 /**
  * get all products

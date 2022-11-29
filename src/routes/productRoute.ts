@@ -1,7 +1,6 @@
 import { Router } from "express";
 import {
 	createProduct,
-	searchProducts,
 	getAllProducts,
 	getSingleProduct,
 	deleteProduct,
@@ -25,7 +24,7 @@ router.post(
 );
 router.get("/:_id", asyncHandler(getSingleProduct));
 router.get("/", asyncHandler(getAllProducts));
-router.get("/catalog", asyncHandler(searchProducts));
+
 router.put(
 	"/:_id",
 	isAuth,
