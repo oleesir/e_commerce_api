@@ -41,13 +41,13 @@
 		"path": "^0.12.7",
 		"qs": "^6.10.3",
 		"regenerator-runtime": "^0.13.9",
-		"stripe": "^10.15.0"
-	},
-	"devDependencies": {
+		"stripe": "^10.15.0",
 		"@babel/cli": "^7.16.0",
 		"@babel/core": "^7.16.5",
 		"@babel/node": "^7.16.5",
-		"@babel/preset-env": "^7.16.5",
+		"@babel/preset-env": "^7.16.5"
+	},
+	"devDependencies": {
 		"@babel/preset-typescript": "^7.16.7",
 		"@types/bcryptjs": "^2.4.2",
 		"@types/cookie-parser": "^1.4.2",
