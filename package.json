@@ -11,7 +11,7 @@
 		"dev": "cross-env NODE_ENV=development ts-node-dev ./src/app.ts --exec babel-node",
 		"seed": "ts-node ./src/database/seedData/index.ts",
 		"clean": "rm -rf dist",
-		"build": "yarn clean && cross-env NODE_ENV=production babel --extensions .ts ./src -d ./dist",
+		"build": "yarn clean && cross-env NODE_ENV=production babel-node --extensions .ts ./src -d ./dist",
 		"start": "cross-env NODE_ENV=production node ./dist/app.js"
 	},
 	"repository": {
@@ -31,6 +31,7 @@
 		"cookie-parser": "^1.4.6",
 		"cors": "^2.8.5",
 		"cross-env": "^7.0.3",
+		"dayjs": "^1.11.7",
 		"dotenv": "^10.0.0",
 		"express": "^4.17.2",
 		"joi": "^17.6.0",
