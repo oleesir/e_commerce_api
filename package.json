@@ -44,12 +44,12 @@
 		"regenerator-runtime": "^0.13.9",
 		"stripe": "^10.15.0",
 		"pino": "^7.11.0",
-		"pino-pretty": "^7.6.1"
-	},
-	"devDependencies": {
+		"pino-pretty": "^7.6.1",
 		"@babel/preset-env": "^7.16.5",
 		"@babel/cli": "^7.16.0",
-		"@babel/preset-typescript": "^7.16.7",
+		"@babel/preset-typescript": "^7.16.7"
+	},
+	"devDependencies": {
 		"@babel/core": "^7.16.5",
 		"@babel/node": "^7.16.5",
 		"@types/bcryptjs": "^2.4.2",
