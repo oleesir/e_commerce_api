@@ -44,12 +44,12 @@
 		"regenerator-runtime": "^0.13.9",
 		"stripe": "^10.15.0",
 		"@babel/preset-env": "^7.16.5",
-		"@babel/cli": "^7.16.0"
+		"@babel/cli": "^7.16.0",
+		"@babel/preset-typescript": "^7.16.7"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.16.5",
 		"@babel/node": "^7.16.5",
-		"@babel/preset-typescript": "^7.16.7",
 		"@types/bcryptjs": "^2.4.2",
 		"@types/cookie-parser": "^1.4.2",
 		"@types/cors": "^2.8.12",
