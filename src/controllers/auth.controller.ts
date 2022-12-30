@@ -15,7 +15,7 @@ const accessTokenCookieOptions: CookieOptions = {
     httpOnly: true,
     sameSite: process.env.NODE_ENV === "development" ? "lax" : "none",
     secure: process.env.NODE_ENV !== "development",
-    domain: process.env.NODE_ENV === "development" ? "localhost" : "app-ecommerce-api.herokuapp.com",
+    domain: process.env.NODE_ENV === "development" ? "localhost" : "ecommerce-api-p2uu.onrender.com",
 };
 
 const refreshTokenCookieOptions: CookieOptions = {
@@ -184,11 +184,12 @@ export const googleOAuth = async (req: Request, res: Response) => {
     try {
         //get the code from qs
         const code = req.query.code as string;
-
         //get the id and access token with the code
         const {id_token, access_token} = await getGoogleOAuthTokens({code});
         //get user with tokens
         const googleUser = await getGoogleUser({id_token, access_token});
+
+        if(!googleUser.verified_email)return res.status(403).json({status: "failed", error: "Google account is not verified"});
 
         //upsert the user
         const user = await User.findOneAndUpdate(
@@ -225,7 +226,6 @@ export const googleOAuth = async (req: Request, res: Response) => {
         res.cookie("accessToken", accessToken, accessTokenCookieOptions);
         res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
         //redirect back to client
-
         return res.redirect(process.env.FRONTEND_URL as string);
     } catch (error) {
         log.error(error, "Failed to authorize Google user");
