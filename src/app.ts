@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import morgan from "morgan";
 import connect from "./database/index";
+import passport from "passport"
 import handleError from "./middleware/errorHandler.middleware";
 import routes from "./routes/index";
 import log from "./utils/logger";
@@ -11,9 +12,10 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-
 const app: Application = express();
 const port = process.env.PORT || 3000;
+
+app.use(passport.initialize())
 
 connect(process.env.MONGO_URI);
 
