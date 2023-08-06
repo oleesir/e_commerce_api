@@ -1,4 +1,4 @@
-import {ErrorRequestHandler} from "express";
+import { ErrorRequestHandler } from 'express';
 
 /**
  * Handlers uncaught erros in the app
@@ -11,10 +11,10 @@ import {ErrorRequestHandler} from "express";
  * Gotten from Express Documentation
  */
 const handleError: ErrorRequestHandler = (err, req, res, next) => {
-	if (res.headersSent) {
-		return next(err);
-	}
-	return res.status(err.status || 500).json({status: "failed", message: err.message});
+  if (res.headersSent) {
+    return next(err);
+  }
+  return res.status(err.status || 500).json({ status: 'failed', message: err.message });
 };
 
 export default handleError;

@@ -1,7 +1,7 @@
-import {Request, Response} from "express";
-import bcrypt from "bcryptjs";
-import {generateToken} from "../utils/generateToken";
-import User from "../database/models/userModel";
+import { Request, Response } from 'express';
+import bcrypt from 'bcryptjs';
+import { generateToken } from '../utils/generateToken';
+import User from '../database/models/userModel';
 
 /**
  * get all users
@@ -12,16 +12,18 @@ import User from "../database/models/userModel";
  * @returns {(function|object)} Function next() or JSON object
  */
 export const getAllUsers = async (req: Request, res: Response) => {
-	let page = parseInt(req.query.page as string) || 1;
-	let limit = parseInt(req.query.limit as string) || 5;
+  let page = parseInt(req.query.page as string) || 1;
+  let limit = parseInt(req.query.limit as string) || 5;
 
-	const count = await User.countDocuments();
+  const count = await User.countDocuments();
 
-	const data = await User.find({})
-		.limit(limit * 1)
-		.skip((page - 1) * limit)
-		.exec();
-	return res.status(200).json({status: "success", data, totalPages: Math.ceil(count / limit), currentPage: page});
+  const data = await User.find({})
+    .limit(limit)
+    .skip((page - 1) * limit)
+    .exec();
+  return res
+    .status(200)
+    .json({ status: 'success', data, totalPages: Math.ceil(count / limit), currentPage: page });
 };
 
 /**
@@ -33,13 +35,13 @@ export const getAllUsers = async (req: Request, res: Response) => {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const getUser = async (req: Request, res: Response) => {
-	const {_id} = req.params;
-	const data = await User.findById({_id});
+  const { _id } = req.params;
+  const data = await User.findById({ _id });
 
-	if (!data) {
-		return res.status(404).json({status: "failed", message: "User does not exist"});
-	}
-	return res.status(200).json({status: "success", data});
+  if (!data) {
+    return res.status(404).json({ status: 'failed', message: 'User does not exist' });
+  }
+  return res.status(200).json({ status: 'success', data });
 };
 
 /**
@@ -51,24 +53,24 @@ export const getUser = async (req: Request, res: Response) => {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const updateUser = async (req: Request, res: Response) => {
-	const {_id} = req.params;
-	const {firstName, lastName, email, role, address} = req.body;
+  const { _id } = req.params;
+  const { firstName, lastName, email, role, address } = req.body;
 
-	const foundUser = await User.findById({_id});
+  const foundUser = await User.findById({ _id });
 
-	if (!foundUser) {
-		return res.status(404).json({status: "failed", message: "User does not exist"});
-	}
+  if (!foundUser) {
+    return res.status(404).json({ status: 'failed', message: 'User does not exist' });
+  }
 
-	foundUser.firstName = firstName || foundUser.firstName;
-	foundUser.lastName = lastName || foundUser.lastName;
-	foundUser.email = email || foundUser.email;
-	foundUser.address = address || foundUser.address;
-	foundUser.role = role || foundUser.role;
+  foundUser.firstName = firstName || foundUser.firstName;
+  foundUser.lastName = lastName || foundUser.lastName;
+  foundUser.email = email || foundUser.email;
+  foundUser.address = address || foundUser.address;
+  foundUser.role = role || foundUser.role;
 
-	const data = await foundUser.save();
+  const data = await foundUser.save();
 
-	return res.status(200).json({status: "success", data});
+  return res.status(200).json({ status: 'success', data });
 };
 
 /**
@@ -80,51 +82,51 @@ export const updateUser = async (req: Request, res: Response) => {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const updateProfile = async (req: Request, res: Response) => {
-	const {_id} = req.params;
-	const {firstName, lastName, email, password} = req.body;
+  const { _id } = req.params;
+  const { firstName, lastName, email, password } = req.body;
 
-	const foundUser = await User.findById({_id});
+  const foundUser = await User.findById({ _id });
 
-	if (!foundUser) {
-		return res.status(404).json({status: "failed", message: "User does not exist"});
-	}
+  if (!foundUser) {
+    return res.status(404).json({ status: 'failed', message: 'User does not exist' });
+  }
 
-	foundUser.firstName = firstName || foundUser.firstName;
-	foundUser.lastName = lastName || foundUser.lastName;
-	foundUser.email = email || foundUser.email;
+  foundUser.firstName = firstName || foundUser.firstName;
+  foundUser.lastName = lastName || foundUser.lastName;
+  foundUser.email = email || foundUser.email;
 
-	if (password) {
-		foundUser.password = bcrypt.hashSync(password, 8);
-	}
+  if (password) {
+    foundUser.password = bcrypt.hashSync(password, 8);
+  }
 
-	const updatedUser = await foundUser.save();
+  const updatedUser = await foundUser.save();
 
-	const payload = {
-		_id: updatedUser._id,
-		email: updatedUser.email,
-		role: updatedUser.role.toLowerCase(),
-	};
+  const payload = {
+    _id: updatedUser._id,
+    email: updatedUser.email,
+    role: updatedUser.role.toLowerCase(),
+  };
 
-	const token = generateToken(payload, process.env.SECRET_KEY as string);
+  const token = generateToken(payload, process.env.SECRET_KEY as string);
 
-	const data = {
-		_id: updatedUser._id,
-		firstName: updatedUser.firstName,
-		lastName: updatedUser.lastName,
-		email: updatedUser.email,
-		role: updatedUser.role.toLowerCase(),
-		token,
-	};
+  const data = {
+    _id: updatedUser._id,
+    firstName: updatedUser.firstName,
+    lastName: updatedUser.lastName,
+    email: updatedUser.email,
+    role: updatedUser.role.toLowerCase(),
+    token,
+  };
 
-	return res
-		.status(200)
-		.cookie("token", token, {
-			maxAge: 1000 * 60 * 60 * 24,
-			secure: false,
-			httpOnly: true,
-			// sameSite: 'lax',
-		})
-		.json({status: "success", data});
+  return res
+    .status(200)
+    .cookie('token', token, {
+      maxAge: 1000 * 60 * 60 * 24,
+      secure: false,
+      httpOnly: true,
+      // sameSite: 'lax',
+    })
+    .json({ status: 'success', data });
 };
 
 /**
@@ -136,15 +138,15 @@ export const updateProfile = async (req: Request, res: Response) => {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const deleteUser = async (req: Request, res: Response) => {
-	const {_id} = req.params;
+  const { _id } = req.params;
 
-	const foundUser = await User.findById({_id});
+  const foundUser = await User.findById({ _id });
 
-	if (!foundUser) {
-		return res.status(404).json({status: "failed", message: "User does not exist"});
-	}
+  if (!foundUser) {
+    return res.status(404).json({ status: 'failed', message: 'User does not exist' });
+  }
 
-	await foundUser.deleteOne();
+  await foundUser.deleteOne();
 
-	return res.status(200).json({status: "success", message: "Successfully deleted"});
+  return res.status(200).json({ status: 'success', message: 'Successfully deleted' });
 };
