@@ -7,6 +7,10 @@ import User from '../database/models/userModel';
 import { generateToken } from '../utils/generateToken';
 import comparePassword from '../utils/comparePassword';
 import log from '../utils/logger';
+import Cart from '../database/models/cartModel';
+import { getTotal } from '../utils/getTotalPriceAndQuantity';
+import { Types } from 'mongoose';
+import { vatFunction } from '../utils/vatFunction';
 
 dotenv.config();
 
@@ -27,7 +31,7 @@ const accessTokenCookieOptions: CookieOptions = {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const registerUser = async (req: Request, res: Response) => {
-  const { firstName, lastName, password, email } = req.body;
+  const { firstName, lastName, password, email, cartItems } = req.body;
 
   const findUser = await User.findOne({ email });
 
@@ -35,13 +39,36 @@ export const registerUser = async (req: Request, res: Response) => {
 
   const hashed = bcrypt.hashSync(password, 10);
 
-  const newUser = new User({ firstName, lastName, email, password: hashed });
+  const productsInCart = cartItems.map((item: any) => {
+    const taxValue = vatFunction(item.price);
+    return {
+      productId: item._id,
+      quantity: item?.cartQuantity,
+      price: item.price,
+      taxPrice: taxValue.vatInCents,
+      priceAfterTax: taxValue.getVat,
+    };
+  });
+
+  let result = getTotal(productsInCart);
+
+  const cart = new Cart({
+    cartItems: productsInCart,
+    totalQuantity: result.totalQuantity,
+    totalPrice: result.totalPrice,
+    totalTax: result.totalTax,
+    totalPriceAfterTax: result.totalPriceAfterTax,
+  });
+  const newCart = await cart.save();
+
+  const newUser = new User({ firstName, lastName, email, password: hashed, cartId: newCart._id });
 
   const savedUser = await newUser.save();
 
   const payload = {
     _id: savedUser._id,
     email: savedUser.email,
+    cartId: newCart._id,
     role: savedUser.role.toLowerCase(),
   };
 
@@ -71,40 +98,85 @@ export const registerUser = async (req: Request, res: Response) => {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const loginUser = async (req: Request, res: Response) => {
-  const { password, email } = req.body;
+  const { password, email, cartItems } = req.body;
 
-  const findUser = await User.findOne({ email });
+  const foundUser = await User.findOne({ email });
 
-  if (!findUser)
+  if (!foundUser) {
     return res.status(400).json({ status: 'failed', message: 'email or password is incorrect' });
+  }
 
-  const verifyUserPassword = comparePassword(password, findUser.password);
+  const verifyUserPassword = comparePassword(password, foundUser.password);
 
   if (!verifyUserPassword) {
     return res.status(401).json({ status: 'failed', message: 'email or password is incorrect' });
   }
 
+  const userCart = await Cart.findOne({ _id: foundUser.cartId });
+
+  if (!userCart) {
+    return res.status(404).json({ status: 'failed', message: 'user cart not found' });
+  }
+
+  if (cartItems.length === 0) {
+    let result = getTotal(userCart?.cartItems);
+    await Cart.findOneAndUpdate(
+      { _id: foundUser.cartId },
+      {
+        cartItems: userCart?.cartItems,
+        totalPrice: result.totalPrice,
+        totalQuantity: result.totalQuantity,
+        totalTax: result.totalTax,
+        totalPriceAfterTax: result.totalPriceAfterTax,
+      },
+      { new: true },
+    );
+  }
+
+  if (cartItems.length > 0) {
+    const productsInCart = cartItems.map((item: any) => {
+      const taxValue = vatFunction(item.price);
+      return {
+        productId: item._id,
+        quantity: item?.cartQuantity,
+        price: item.price,
+        taxPrice: taxValue.vatInCents,
+        priceAfterTax: taxValue.getVat,
+      };
+    });
+
+    let result = getTotal(productsInCart);
+
+    await Cart.findOneAndUpdate(
+      { _id: foundUser.cartId },
+      {
+        cartItems: productsInCart,
+        totalPrice: result.totalPrice,
+        totalQuantity: result.totalQuantity,
+        totalTax: result.totalTax,
+        totalPriceAfterTax: result.totalPriceAfterTax,
+      },
+      { new: true },
+    );
+  }
+
   const payload = {
-    _id: findUser?._id,
-    firstName: findUser?.firstName,
-    lastName: findUser?.lastName,
-    email: findUser?.email.toLowerCase(),
-    address: findUser?.address,
-    callingCode: findUser?.callingCode,
-    phoneNumber: findUser?.phoneNumber,
-    role: findUser?.role.toLowerCase(),
+    _id: foundUser?._id,
+    email: foundUser?.email.toLowerCase(),
+    cartId: foundUser?.cartId,
+    role: foundUser?.role.toLowerCase(),
   };
   const accessToken = generateToken(payload, process.env.SECRET_KEY as string);
 
   const data = {
-    _id: findUser?._id,
-    firstName: findUser?.firstName,
-    lastName: findUser?.lastName,
-    email: findUser?.email.toLowerCase(),
-    callingCode: findUser?.callingCode,
-    address: findUser?.address,
-    phoneNumber: findUser?.phoneNumber,
-    role: findUser?.role.toLowerCase(),
+    _id: foundUser?._id,
+    firstName: foundUser?.firstName,
+    lastName: foundUser?.lastName,
+    email: foundUser?.email.toLowerCase(),
+    callingCode: foundUser?.callingCode,
+    address: foundUser?.address,
+    phoneNumber: foundUser?.phoneNumber,
+    role: foundUser?.role.toLowerCase(),
   };
 
   res.cookie('accessToken', accessToken, accessTokenCookieOptions);
@@ -135,6 +207,7 @@ export const loggedInUser = async (req: Request, res: Response) => {
     const data = {
       _id: foundUser?._id,
       email: foundUser?.email.toLowerCase(),
+      cartId: foundUser?.cartId,
       role: foundUser?.role.toLowerCase(),
     };
 
@@ -197,6 +270,7 @@ export const googleOAuth = async (req: Request, res: Response) => {
     const payload = {
       _id: user?._id,
       email: user?.email.toLowerCase(),
+      cartId: user?.cartId,
       role: user?.role.toLowerCase(),
     };
 

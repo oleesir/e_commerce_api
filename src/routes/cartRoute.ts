@@ -2,7 +2,6 @@ import { Router } from 'express';
 import {
   addItemToCart,
   checkoutCart,
-  createCart,
   deleteCart,
   getUserCartItems,
   reduceItemsInCart,
@@ -14,12 +13,12 @@ import { authorizedRole, isAuth } from '../middleware/authorization.middleware';
 
 const router: Router = Router();
 
-router.post(
-  '/create_cart',
-  isAuth,
-  authorizedRole([roles.ADMIN, roles.SELLER, roles.CUSTOMER]),
-  asyncErrorHandler(createCart),
-);
+// router.post(
+//   '/create_cart',
+//   isAuth,
+//   authorizedRole([roles.ADMIN, roles.SELLER, roles.CUSTOMER]),
+//   asyncErrorHandler(createCart),
+// );
 
 router.post(
   '/',
@@ -43,7 +42,7 @@ router.post(
 );
 
 router.get(
-  '/user_cart',
+  `/user_cart/:cartId`,
   isAuth,
   authorizedRole([roles.ADMIN, roles.SELLER, roles.CUSTOMER]),
   asyncErrorHandler(getUserCartItems),

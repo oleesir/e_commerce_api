@@ -1,5 +1,5 @@
 import { roles } from '../../utils/constants';
-import { Schema, Document, model } from 'mongoose';
+import { Schema, Document, model, Types } from 'mongoose';
 
 interface IUser extends Document {
   firstName: string;
@@ -10,6 +10,7 @@ interface IUser extends Document {
   phoneNumber: string | undefined;
   email: string;
   role: string;
+  cartId: Types.ObjectId;
 }
 
 const userSchema = new Schema<IUser>(
@@ -26,6 +27,7 @@ const userSchema = new Schema<IUser>(
       enum: [roles.ADMIN, roles.SELLER, roles.CUSTOMER],
       default: roles.CUSTOMER,
     },
+    cartId: { type: Schema.Types.ObjectId, required: true, ref: 'Cart' },
   },
   { timestamps: true },
 );
