@@ -42,14 +42,14 @@ router.post(
 );
 
 router.get(
-  `/user_cart/:cartId`,
+  `/user_cart/:_id`,
   isAuth,
   authorizedRole([roles.ADMIN, roles.SELLER, roles.CUSTOMER]),
   asyncErrorHandler(getUserCartItems),
 );
 
 router.delete(
-  '/remove/:productId',
+  '/remove',
   isAuth,
   authorizedRole([roles.ADMIN, roles.SELLER, roles.CUSTOMER]),
   asyncErrorHandler(removeItemsInCart),

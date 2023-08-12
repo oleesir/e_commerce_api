@@ -33,42 +33,78 @@ const accessTokenCookieOptions: CookieOptions = {
 export const registerUser = async (req: Request, res: Response) => {
   const { firstName, lastName, password, email, cartItems } = req.body;
 
+  let cart;
+
   const findUser = await User.findOne({ email });
 
   if (findUser) return res.status(400).json({ status: 'failed', message: 'Email already exist' });
 
   const hashed = bcrypt.hashSync(password, 10);
 
-  const productsInCart = cartItems.map((item: any) => {
-    const taxValue = vatFunction(item.price);
-    return {
-      productId: item._id,
-      quantity: item?.cartQuantity,
-      price: item.price,
-      taxPrice: taxValue.vatInCents,
-      priceAfterTax: taxValue.getVat,
-    };
-  });
+  // if (!userCart) {
+  //   return res.status(404).json({ status: 'failed', message: 'user cart not found' });
+  // }
 
-  let result = getTotal(productsInCart);
+  if (cartItems.length === 0) {
+    cart = new Cart({
+      cartItems: [],
+      totalQuantity: 0,
+      totalPrice: 0,
+      taxPrice: 0,
+      totalPriceAfterTax: 0,
+      grandTotal: 0,
+    });
+    await cart.save();
+  }
 
-  const cart = new Cart({
-    cartItems: productsInCart,
-    totalQuantity: result.totalQuantity,
-    totalPrice: result.totalPrice,
-    totalTax: result.totalTax,
-    totalPriceAfterTax: result.totalPriceAfterTax,
-  });
-  const newCart = await cart.save();
+  if (cartItems.length > 0) {
+    cart = new Cart({
+      cartItems: [],
+      totalQuantity: 0,
+      totalPrice: 0,
+      taxPrice: 0,
+      totalPriceAfterTax: 0,
+      grandTotal: 0,
+    });
+    await cart.save();
 
-  const newUser = new User({ firstName, lastName, email, password: hashed, cartId: newCart._id });
+    const productsInCart = cartItems.map((item: any) => {
+      const taxValue = vatFunction(item.price);
+
+      return {
+        productId: item._id,
+        quantity: item?.cartQuantity,
+        name: item.name,
+        image: item.images[0].secureUrl,
+        price: item.price,
+        taxPrice: taxValue.vatInCents,
+        priceAfterTax: taxValue.getVat,
+      };
+    });
+
+    let result = getTotal(productsInCart);
+
+    await Cart.findByIdAndUpdate(
+      { _id: cart._id },
+      {
+        cartItems: productsInCart,
+        totalPrice: result.totalPrice,
+        totalQuantity: result.totalQuantity,
+        totalTax: result.totalTax,
+        totalPriceAfterTax: result.totalPriceAfterTax,
+      },
+      { new: true },
+    );
+  }
+
+  const newUser = new User({ firstName, lastName, email, password: hashed, cartId: cart?._id });
 
   const savedUser = await newUser.save();
 
   const payload = {
     _id: savedUser._id,
     email: savedUser.email,
-    cartId: newCart._id,
+    cartId: cart?._id,
     role: savedUser.role.toLowerCase(),
   };
 
@@ -112,7 +148,7 @@ export const loginUser = async (req: Request, res: Response) => {
     return res.status(401).json({ status: 'failed', message: 'email or password is incorrect' });
   }
 
-  const userCart = await Cart.findOne({ _id: foundUser.cartId });
+  const userCart = await Cart.findById(foundUser.cartId);
 
   if (!userCart) {
     return res.status(404).json({ status: 'failed', message: 'user cart not found' });
@@ -139,6 +175,8 @@ export const loginUser = async (req: Request, res: Response) => {
       return {
         productId: item._id,
         quantity: item?.cartQuantity,
+        name: item.name,
+        image: item.images[0].secureUrl,
         price: item.price,
         taxPrice: taxValue.vatInCents,
         priceAfterTax: taxValue.getVat,

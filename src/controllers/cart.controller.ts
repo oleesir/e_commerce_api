@@ -47,22 +47,26 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
  * @returns {(function|object)} Function next() or JSON object
  */
 export const addItemToCart = async (req: Request, res: Response) => {
-  const { productId, price, cartId } = req.body;
+  const { productId, price, cartId, name, image } = req.body;
   let cart;
 
   let userCart = await Cart.findOne({ _id: cartId });
 
   if (!userCart) {
-    cart = new Cart({
-      cartItems: [],
-      totalQuantity: 0,
-      totalPrice: 0,
-      taxPrice: 0,
-      totalPriceAfterTax: 0,
-      grandTotal: 0,
-    });
-    userCart = await cart.save();
+    return res.status(404).json({ status: 'failed', message: 'Cart does not exist' });
   }
+  //
+  // if (!userCart) {
+  //   cart = new Cart({
+  //     cartItems: [],
+  //     totalQuantity: 0,
+  //     totalPrice: 0,
+  //     taxPrice: 0,
+  //     totalPriceAfterTax: 0,
+  //     grandTotal: 0,
+  //   });
+  //   userCart = await cart.save();
+  // }
 
   const taxValue = vatFunction(price);
 
@@ -77,6 +81,8 @@ export const addItemToCart = async (req: Request, res: Response) => {
     userCart.cartItems[itemIndex] = {
       ...cartItemToAdd,
       productId: cartItemToAdd.productId,
+      name: cartItemToAdd.name,
+      image: cartItemToAdd?.image,
       quantity: cartItemToAdd.quantity + 1,
       price: cartItemToAdd.price,
       taxPrice: cartItemToAdd.taxPrice,
@@ -86,6 +92,8 @@ export const addItemToCart = async (req: Request, res: Response) => {
     const newItem = {
       productId,
       quantity: 1,
+      name,
+      image,
       price: price * 100,
       taxPrice: taxValue.vatInCents,
       priceAfterTax: taxValue.getVat,
@@ -96,7 +104,7 @@ export const addItemToCart = async (req: Request, res: Response) => {
 
   let result = getTotal(userCart.cartItems);
 
-  const data = await Cart.findOneAndUpdate(
+  const data = await Cart.findByIdAndUpdate(
     { _id: cartId },
     {
       cartItems: userCart.cartItems,
@@ -122,7 +130,7 @@ export const addItemToCart = async (req: Request, res: Response) => {
 export const getUserCartItems = async (req: Request, res: Response) => {
   const { _id: cartId } = req.params;
 
-  const data = await Cart.findOne({ cartId });
+  const data = await Cart.findById(cartId);
 
   if (!data) {
     return res.status(404).json({ status: 'failed', message: 'Cart does not exist' });
@@ -141,10 +149,9 @@ export const getUserCartItems = async (req: Request, res: Response) => {
  */
 
 export const reduceItemsInCart = async (req: Request, res: Response) => {
-  const { _id: userId } = (<any>req).user;
   const { productId, cartId } = req.body;
 
-  let userCart = await Cart.findOne({ _id: cartId });
+  let userCart = await Cart.findById(cartId);
 
   if (!userCart) {
     return res.status(404).json({ status: 'failed', message: 'No cart found' });
@@ -161,7 +168,7 @@ export const reduceItemsInCart = async (req: Request, res: Response) => {
       (cartItem: any) => cartItem?.productId.toString() !== productId,
     );
 
-    const data = await Cart.findOneAndUpdate(
+    const data = await Cart.findByIdAndUpdate(
       { _id: cartId },
       { cartItems: nextCartItems },
       { new: true },
@@ -172,12 +179,14 @@ export const reduceItemsInCart = async (req: Request, res: Response) => {
 
   let result = getTotal(userCart.cartItems);
 
-  const data = await Cart.findOneAndUpdate(
+  const data = await Cart.findByIdAndUpdate(
     { _id: cartId },
     {
       cartItems: userCart.cartItems,
       totalPrice: result.totalPrice,
       totalQuantity: result.totalQuantity,
+      totalTax: result.totalTax,
+      totalPriceAfterTax: result.totalPriceAfterTax,
     },
     { new: true },
   );
@@ -196,7 +205,7 @@ export const reduceItemsInCart = async (req: Request, res: Response) => {
 export const removeItemsInCart = async (req: Request, res: Response) => {
   const { productId, cartId } = req.body;
 
-  let userCart = await Cart.findOne({ cartId });
+  let userCart = await Cart.findById(cartId);
 
   if (!userCart) {
     return res.status(404).json({ status: 'failed', message: 'No cart found' });
@@ -213,12 +222,14 @@ export const removeItemsInCart = async (req: Request, res: Response) => {
 
     let result = getTotal(nextCartItems);
 
-    const data = await Cart.findOneAndUpdate(
+    const data = await Cart.findByIdAndUpdate(
       { _id: cartId },
       {
         cartItems: nextCartItems,
         totalPrice: result.totalPrice,
         totalQuantity: result.totalQuantity,
+        totalTax: result.totalTax,
+        totalPriceAfterTax: result.totalPriceAfterTax,
       },
       { new: true },
     );
@@ -236,10 +247,9 @@ export const removeItemsInCart = async (req: Request, res: Response) => {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const checkoutCart = async (req: Request, res: Response) => {
-  const { _id: userId } = (<any>req).user;
   const { _id: cartId } = req.body;
   try {
-    let userCart = await Cart.findOne({ userId, cartId });
+    let userCart = await Cart.findById(cartId);
 
     if (!userCart) {
       return res.status(404).json({ status: 'failed', message: 'No cart found' });
@@ -247,7 +257,7 @@ export const checkoutCart = async (req: Request, res: Response) => {
 
     const cartItemsPromises = userCart?.cartItems.map(async (item: any, i: any) => {
       const eachProduct = await Product.findOne({ _id: item?.productId.toString() });
-      userCart = await Cart.findOne({ userId, cartId });
+      userCart = await Cart.findById(cartId);
       if (!eachProduct) {
         throw new Error('product not found');
       }
