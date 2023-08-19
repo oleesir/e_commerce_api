@@ -118,7 +118,7 @@ export const searchProducts = async (req: Request, res: Response) => {
       },
     },
     { $limit: 10 },
-    { $project: { _id: 1, name: 1, slug: 1 } },
+    { $project: { _id: 1, name: 1, slug: 1, images: 1, rating: 1, numberOfReviews: 1, price: 1 } },
   ];
 
   const data = await Product.aggregate(agg);
