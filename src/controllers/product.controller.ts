@@ -72,6 +72,61 @@ export const getAllProducts = async (req: Request, res: Response) => {
 };
 
 /**
+ * get all products
+ * @method searchProducts
+ * @memberof productController
+ * @param {object} req
+ * @param {object} res
+ * @returns {(function|object)} Function next() or JSON object
+ */
+export const searchProducts = async (req: Request, res: Response) => {
+  let name = req.query.name as string;
+
+  if (!name) {
+    return res.status(200).json({ status: 'success', products: [] });
+  }
+
+  const agg = [
+    {
+      $search: {
+        index: 'search-text',
+        compound: {
+          should: [
+            {
+              text: {
+                query: name,
+                path: ['name', 'brand'],
+                fuzzy: { maxEdits: 1 },
+              },
+            },
+            {
+              text: {
+                query: name,
+                path: ['brand'],
+                fuzzy: { maxEdits: 1 },
+              },
+            },
+            {
+              text: {
+                query: name,
+                path: ['category'],
+                fuzzy: { maxEdits: 1 },
+              },
+            },
+          ],
+        },
+      },
+    },
+    { $limit: 10 },
+    { $project: { _id: 1, name: 1, slug: 1 } },
+  ];
+
+  const data = await Product.aggregate(agg);
+
+  return res.status(200).json({ status: 'success', data });
+};
+
+/**
  * get a single product
  * @method getSingleProduct
  * @memberof productController

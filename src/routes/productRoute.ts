@@ -5,6 +5,7 @@ import {
   getSingleProduct,
   deleteProduct,
   updateProduct,
+  searchProducts,
 } from '../controllers/product.controller';
 import { authorizedRole, isAuth } from '../middleware/authorization.middleware';
 import { validateCreateProduct, validateUpdateProduct } from '../middleware/validation.middleware';
@@ -22,6 +23,7 @@ router.post(
   validateCreateProduct,
   asyncHandler(createProduct),
 );
+router.get('/search', asyncHandler(searchProducts));
 router.get('/:_id', asyncHandler(getSingleProduct));
 router.get('/', asyncHandler(getAllProducts));
 

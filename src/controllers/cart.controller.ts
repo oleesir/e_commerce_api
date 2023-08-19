@@ -248,46 +248,43 @@ export const removeItemsInCart = async (req: Request, res: Response) => {
  */
 export const checkoutCart = async (req: Request, res: Response) => {
   const { _id: cartId } = req.body;
-  try {
-    let userCart = await Cart.findById(cartId);
 
-    if (!userCart) {
-      return res.status(404).json({ status: 'failed', message: 'No cart found' });
+  let userCart = await Cart.findById(cartId);
+
+  if (!userCart) {
+    return res.status(404).json({ status: 'failed', message: 'No cart found' });
+  }
+
+  const cartItemsPromises = userCart?.cartItems.map(async (item: any, i: any) => {
+    const eachProduct = await Product.findOne({ _id: item?.productId.toString() });
+    userCart = await Cart.findById(cartId);
+    if (!eachProduct) {
+      throw new Error('product not found');
     }
 
-    const cartItemsPromises = userCart?.cartItems.map(async (item: any, i: any) => {
-      const eachProduct = await Product.findOne({ _id: item?.productId.toString() });
-      userCart = await Cart.findById(cartId);
-      if (!eachProduct) {
-        throw new Error('product not found');
-      }
-
-      return {
-        price_data: {
-          currency: 'CAD',
-          product_data: {
-            name: eachProduct.name,
-          },
-          unit_amount: item.priceAfterTax,
+    return {
+      price_data: {
+        currency: 'CAD',
+        product_data: {
+          name: eachProduct.name,
         },
-        quantity: item.quantity,
-      };
-    });
+        unit_amount: item.priceAfterTax,
+      },
+      quantity: item.quantity,
+    };
+  });
 
-    const cartItems = await Promise.all(cartItemsPromises);
+  const cartItems = await Promise.all(cartItemsPromises);
 
-    const session = await stripe.checkout.sessions.create({
-      cancel_url: `${process.env.FRONTEND_URL as string}/transaction_failed`,
-      success_url: `${process.env.FRONTEND_URL as string}/transaction_success`,
-      payment_method_types: ['card'],
-      mode: 'payment',
-      line_items: cartItems,
-    });
+  const session = await stripe.checkout.sessions.create({
+    cancel_url: `${process.env.FRONTEND_URL as string}/transaction_failed`,
+    success_url: `${process.env.FRONTEND_URL as string}/transaction_success`,
+    payment_method_types: ['card'],
+    mode: 'payment',
+    line_items: cartItems,
+  });
 
-    return res.json({ data: `${session.url}` });
-  } catch (e) {
-    console.log('ERROR', e);
-  }
+  return res.json({ data: `${session.url}` });
 };
 
 /**

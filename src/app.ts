@@ -4,7 +4,6 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import morgan from 'morgan';
 import connect from './database/index';
-import passport from 'passport';
 import handleError from './middleware/errorHandler.middleware';
 import routes from './routes/index';
 import log from './utils/logger';

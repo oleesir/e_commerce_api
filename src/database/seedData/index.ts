@@ -1,32 +1,30 @@
-import mongoose, { ConnectOptions } from "mongoose";
-import { users, products } from "../data/dummyData";
-import User from "../models/userModel";
-import Product from "../models/productModel";
-import dotenv from "dotenv";
+import mongoose, { ConnectOptions } from 'mongoose';
+import Product from '../models/productModel';
+import dotenv from 'dotenv';
+import { getProductsDummyData } from '../data/dummyData';
 dotenv.config();
 
 mongoose
-	.connect(
-		process.env.MONGO_URI as string,
-		{
-			useNewUrlParser: true,
-			useUnifiedTopology: true,
-		} as ConnectOptions,
-	)
-	.then(() => {
-		console.log("Db seeded successfully");
-	})
-	.catch((err) => {
-		console.log(err);
-	});
+  .connect(
+    process.env.MONGO_URI as string,
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    } as ConnectOptions,
+  )
+  .then(() => {
+    console.log('Db seeded successfully');
+  })
+  .catch((err) => {
+    console.log(err);
+  });
 
 const seedDB = async () => {
-	await User.deleteMany({});
-	await User.insertMany(users);
-	await Product.deleteMany({});
-	await Product.insertMany(products);
+  const dummyData = await getProductsDummyData();
+  await Product.deleteMany({});
+  await Product.insertMany(dummyData);
 };
 
 seedDB().then(() => {
-	mongoose.connection.close();
+  mongoose.connection.close();
 });
