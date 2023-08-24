@@ -6,8 +6,9 @@ interface IUser extends Document {
   lastName: string;
   password: string;
   address: string | undefined;
-  callingCode: string | undefined;
   phoneNumber: string | undefined;
+  province: string | undefined;
+  city: string | undefined;
   email: string;
   role: string;
   cartId: Types.ObjectId;
@@ -17,10 +18,11 @@ const userSchema = new Schema<IUser>(
   {
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
-    password: { type: String },
-    callingCode: { type: String },
-    phoneNumber: { type: String },
-    address: { type: String },
+    password: { type: String, required: true },
+    phoneNumber: { type: String, default: '' },
+    address: { type: String, default: '' },
+    province: { type: String, default: '' },
+    city: { type: String, default: '' },
     email: { type: String, required: true, unique: true },
     role: {
       type: String,

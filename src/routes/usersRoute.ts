@@ -14,7 +14,12 @@ import { roles } from '../utils/constants';
 const router: Router = Router();
 
 router.get('/', isAuth, authorizedRole([roles.ADMIN]), asyncHandler(getAllUsers));
-router.get('/:_id', isAuth, authorizedRole([roles.ADMIN]), asyncHandler(getUser));
+router.get(
+  '/:_id',
+  isAuth,
+  authorizedRole([roles.ADMIN, roles.SELLER, roles.CUSTOMER]),
+  asyncHandler(getUser),
+);
 router.put(
   '/:_id',
   isAuth,

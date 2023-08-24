@@ -2,13 +2,7 @@ import { Schema, Document, model, Types } from 'mongoose';
 
 interface IOrder extends Document {
   userId: Types.ObjectId;
-  email: string;
-  address: string;
-  phoneNumber: string;
-  city: string;
-  country: string;
   paymentMethod: string;
-  taxPrice: number;
   cartItems: [
     {
       productId: Types.ObjectId;
@@ -33,11 +27,6 @@ interface IOrder extends Document {
 const orderSchema = new Schema<IOrder>(
   {
     userId: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
-    email: { type: String, required: true },
-    phoneNumber: { type: String, required: true },
-    address: { type: String },
-    city: { type: String, required: true },
-    country: { type: String, required: true },
     paymentMethod: { type: String, required: true, enum: ['paypal', 'stripe'], default: 'stripe' },
     cartItems: [
       {

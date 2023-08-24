@@ -36,11 +36,25 @@ export const getAllUsers = async (req: Request, res: Response) => {
  */
 export const getUser = async (req: Request, res: Response) => {
   const { _id } = req.params;
-  const data = await User.findById({ _id });
+  const foundUser = await User.findById({ _id });
 
-  if (!data) {
+  // console.log('DATA', data);
+
+  if (!foundUser) {
     return res.status(404).json({ status: 'failed', message: 'User does not exist' });
   }
+
+  const data = {
+    _id: foundUser?._id,
+    firstName: foundUser?.firstName,
+    lastName: foundUser?.lastName,
+    email: foundUser?.email.toLowerCase(),
+    address: foundUser?.address,
+    phoneNumber: foundUser?.phoneNumber,
+    province: foundUser?.province,
+    city: foundUser?.city,
+    role: foundUser?.role.toLowerCase(),
+  };
   return res.status(200).json({ status: 'success', data });
 };
 
