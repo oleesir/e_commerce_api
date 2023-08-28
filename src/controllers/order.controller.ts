@@ -1,22 +1,99 @@
 import { Request, Response } from 'express';
+import Stripe from 'stripe';
 import Cart from '../database/models/cartModel';
 import User from '../database/models/userModel';
 import Order from '../database/models/orderModel';
+import Product from '../database/models/productModel';
+
+// @ts-ignore
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+const updateStock = ({
+  countInStock,
+  quantityFromCart,
+}: {
+  countInStock: Number;
+  quantityFromCart: Number;
+}) => {
+  if (countInStock > -1) {
+    if (countInStock >= quantityFromCart) {
+      return Number(countInStock) - Number(quantityFromCart);
+    } else {
+      return;
+    }
+  }
+};
+
+const createOrder = async ({ customer, data }: { customer: any; data: any }) => {
+  const cartId = customer.metadata.cartId;
+
+  const userId = customer.metadata.userId;
+
+  let userCart = await Cart.findById(cartId);
+
+  let foundUser = await User.findById(userId);
+
+  const order = new Order({
+    userId: foundUser?._id,
+    customerId: data.customer,
+    paymentIntentId: data.payment_intent,
+    cartItems: userCart?.cartItems,
+    totalQuantity: userCart?.totalQuantity,
+    totalPrice: userCart?.totalPrice,
+    totalTax: userCart?.totalTax,
+    totalPriceAfterTax: userCart?.totalPriceAfterTax,
+    txStatus: 'successful',
+  });
+
+  const createdOrder = await order.save();
+
+  if (!createdOrder) {
+    throw new Error('Order was not created');
+  }
+
+  userCart?.cartItems.map(async (cartItem: any) => {
+    const product = await Product.findById({ _id: cartItem?.productId.toString() });
+    await Product.findByIdAndUpdate(
+      { _id: product?._id },
+      {
+        countInStock: updateStock({
+          countInStock: product?.countInStock || 0,
+          quantityFromCart: cartItem?.quantity,
+        }),
+      },
+      { new: true },
+    );
+  });
+
+  await Cart.findByIdAndUpdate(
+    { _id: userCart?._id },
+    {
+      cartItems: [],
+      totalPrice: 0,
+      totalQuantity: 0,
+      totalTax: 0,
+      totalPriceAfterTax: 0,
+    },
+    { new: true },
+  );
+};
 
 /**
- * create order
- * @method createOrder
+ * checkout
+ * @method placeOrder
  * @memberof orderController
  * @param {object} req
  * @param {object} res
  * @returns {(function|object)} Function next() or JSON object
  */
-export const createOrder = async (req: Request, res: Response) => {
-  const { cartId, address, phoneNumber, province, city, paymentMethod } = req.body;
+export const placeOrder = async (req: Request, res: Response) => {
+  const { cartId, address, phoneNumber, province, city } = req.body;
+
   const { _id: userId } = (<any>req).user;
 
   let userCart = await Cart.findById(cartId);
-  let foundUser = await User.findById({ _id: userId });
+
+  let foundUser = await User.findById(userId);
 
   if (!userCart) {
     return res.status(404).json({ status: 'failed', message: 'No cart found' });
@@ -37,18 +114,91 @@ export const createOrder = async (req: Request, res: Response) => {
     { new: true },
   );
 
-  const order = new Order({
-    userId: foundUser?._id,
-    paymentMethod,
-    cartItems: userCart.cartItems,
-    totalQuantity: userCart?.totalQuantity,
-    totalPrice: userCart?.totalPrice,
-    totalTax: userCart?.totalTax,
-    totalPriceAfterTax: userCart?.totalPriceAfterTax,
+  const customer = await stripe.customers.create({
+    metadata: {
+      userId,
+      cartId,
+    },
   });
 
-  const data = await order.save();
-  return res.status(201).json({ status: 'success', data });
+  const cartItemsPromises = userCart?.cartItems.map(async (item: any) => {
+    const product = await Product.findById({ _id: item?.productId.toString() });
+
+    userCart = await Cart.findById(cartId);
+    if (!product) {
+      throw new Error('product not found');
+    }
+
+    return {
+      price_data: {
+        currency: 'CAD',
+        product_data: {
+          name: product?.name,
+          images: [product?.images[0].secureUrl],
+          metadata: {
+            id: product?._id,
+          },
+        },
+        unit_amount: item.priceAfterTax,
+      },
+      quantity: item.quantity,
+    };
+  });
+
+  const cartItems = await Promise.all(cartItemsPromises);
+
+  const session = await stripe.checkout.sessions.create({
+    cancel_url: `${process.env.FRONTEND_URL as string}/transaction_failed`,
+    success_url: `${process.env.FRONTEND_URL as string}/transaction_success`,
+    payment_method_types: ['card'],
+    mode: 'payment',
+    customer: customer?.id,
+    phone_number_collection: {
+      enabled: true,
+    },
+    line_items: cartItems,
+  });
+
+  return res.json({ data: `${session.url}` });
+};
+
+export const stripeWebhook = async (req: Request, res: Response) => {
+  let data;
+  let eventType;
+
+  const stripePayload = (req as any).rawBody || req.body;
+
+  const stripeSignature = req.headers['stripe-signature'];
+  if (stripeSignature == null) {
+    throw new Error('No stripe signature found!');
+  }
+
+  if (process.env.END_POINT_SECRET) {
+    let event;
+
+    try {
+      event = stripe.webhooks.constructEvent(
+        stripePayload,
+        stripeSignature?.toString(),
+        process.env.END_POINT_SECRET,
+      );
+    } catch (err: any) {
+      console.log(`Webhook Error: ${err.message}`);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+    data = event.data.object;
+    eventType = event.type;
+  } else {
+    data = req.body.data.object;
+    eventType = req.body.type;
+  }
+
+  if (eventType === 'checkout.session.completed') {
+    const customer = await stripe.customers.retrieve(data?.customer);
+    await createOrder({ customer, data });
+  }
+  // Return a 200 response to acknowledge receipt of the event
+  res.send().end();
 };
 
 /**

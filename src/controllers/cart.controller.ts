@@ -1,12 +1,7 @@
 import { Request, Response } from 'express';
 import Cart from '../database/models/cartModel';
-import Product from '../database/models/productModel';
 import { getTotal } from '../utils/getTotalPriceAndQuantity';
-import Stripe from 'stripe';
 import { vatFunction } from '../utils/vatFunction';
-
-// @ts-ignore
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // /**
 //  * create cart
@@ -236,57 +231,6 @@ export const removeItemsInCart = async (req: Request, res: Response) => {
 
     return res.status(200).json({ status: 'success', data });
   }
-};
-
-/**
- * checkout
- * @method checkout
- * @memberof cartController
- * @param {object} req
- * @param {object} res
- * @returns {(function|object)} Function next() or JSON object
- */
-export const checkoutCart = async (req: Request, res: Response) => {
-  const { _id: cartId } = req.body;
-
-  let userCart = await Cart.findById(cartId);
-
-  if (!userCart) {
-    return res.status(404).json({ status: 'failed', message: 'No cart found' });
-  }
-
-  const cartItemsPromises = userCart?.cartItems.map(async (item: any) => {
-    const product = await Product.findById({ _id: item?.productId.toString() });
-
-    userCart = await Cart.findById(cartId);
-    if (!product) {
-      throw new Error('product not found');
-    }
-
-    return {
-      price_data: {
-        currency: 'CAD',
-        product_data: {
-          name: product?.name,
-          images: [product?.images[0].secureUrl],
-        },
-        unit_amount: item.priceAfterTax,
-      },
-      quantity: item.quantity,
-    };
-  });
-
-  const cartItems = await Promise.all(cartItemsPromises);
-
-  const session = await stripe.checkout.sessions.create({
-    cancel_url: `${process.env.FRONTEND_URL as string}/transaction_failed`,
-    success_url: `${process.env.FRONTEND_URL as string}/transaction_success`,
-    payment_method_types: ['card'],
-    mode: 'payment',
-    line_items: cartItems,
-  });
-
-  return res.json({ data: `${session.url}` });
 };
 
 /**

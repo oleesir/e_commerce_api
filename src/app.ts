@@ -16,12 +16,9 @@ const port = process.env.PORT || 3000;
 
 connect(process.env.MONGO_URI);
 
-const allowOrigins = [
-  'http://localhost:3000',
-  'https://oliveshop.netlify.app',
-  'https://checkout.stripe.com',
-  'https://olivemarket.netlify.app',
-];
+const localhost = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '';
+
+const allowOrigins = [localhost, 'https://checkout.stripe.com', 'https://olivemarket.netlify.app'];
 const corsOptions = {
   credentials: true,
   origin: (origin: any, callback: any) => {
@@ -39,7 +36,14 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // Body parsing Middleware
-app.use(express.json());
+app.use((req, res, next) => {
+  if (req.originalUrl === '/api/v1/orders/webhook') {
+    next();
+  } else {
+    express.json()(req, res, next);
+  }
+});
+
 app.use(express.urlencoded({ extended: true }));
 
 if (process.env.NODE_ENV === 'development') {
@@ -51,7 +55,7 @@ app.use(cookieParser());
 //API
 app.use('/api/v1', routes);
 
-app.get('/', async (req: Request, res: Response): Promise<Response> => {
+app.get('/', (req: Request, res: Response) => {
   return res.status(200).send({
     message: 'MY E-COMMERCE BACKEND',
   });

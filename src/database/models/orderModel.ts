@@ -2,7 +2,8 @@ import { Schema, Document, model, Types } from 'mongoose';
 
 interface IOrder extends Document {
   userId: Types.ObjectId;
-  paymentMethod: string;
+  customerId: string;
+  paymentIntentId: string;
   cartItems: [
     {
       productId: Types.ObjectId;
@@ -18,7 +19,7 @@ interface IOrder extends Document {
   totalPrice: number;
   totalTax: number;
   totalPriceAfterTax: number;
-  isPaid: string;
+  txStatus: string;
   isDelivered: string;
   paidAt: Date;
   deliveredAt: Date;
@@ -27,7 +28,8 @@ interface IOrder extends Document {
 const orderSchema = new Schema<IOrder>(
   {
     userId: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
-    paymentMethod: { type: String, required: true, enum: ['paypal', 'stripe'], default: 'stripe' },
+    customerId: { type: String, required: true },
+    paymentIntentId: { type: String, required: true },
     cartItems: [
       {
         productId: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
@@ -43,7 +45,7 @@ const orderSchema = new Schema<IOrder>(
     totalPrice: { type: Number, default: 0 },
     totalTax: { type: Number, required: true, default: 0 },
     totalPriceAfterTax: { type: Number, required: true, default: 0 },
-    isPaid: {
+    txStatus: {
       type: String,
       required: true,
       enum: ['successful', 'failed', 'pending'],

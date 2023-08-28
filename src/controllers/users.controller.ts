@@ -38,8 +38,6 @@ export const getUser = async (req: Request, res: Response) => {
   const { _id } = req.params;
   const foundUser = await User.findById({ _id });
 
-  // console.log('DATA', data);
-
   if (!foundUser) {
     return res.status(404).json({ status: 'failed', message: 'User does not exist' });
   }

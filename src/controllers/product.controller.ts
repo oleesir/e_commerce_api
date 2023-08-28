@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import cloudinary from '../utils/cloudinary';
 import { slugify } from '../utils/slugify';
 import Product from '../database/models/productModel';
+import Cart from '../database/models/cartModel';
 
 /**
  * create a product
@@ -161,15 +162,19 @@ export const updateProduct = async (req: Request, res: Response) => {
     return res.status(404).json({ status: 'failed', message: 'Product does not exist' });
   }
 
-  foundProduct.name = name || foundProduct.name;
-  foundProduct.description = description || foundProduct.description;
-  foundProduct.slug = (name && slugify(name)) || foundProduct.slug;
-  foundProduct.category = category || foundProduct.category;
-  foundProduct.brand = brand || foundProduct.brand;
-  foundProduct.price = price * 100 || foundProduct.price;
-  foundProduct.countInStock = countInStock || foundProduct.countInStock;
-
-  const data = await foundProduct.save();
+  const data = await Product.findByIdAndUpdate(
+    { _id: foundProduct?._id },
+    {
+      name: name || foundProduct.name,
+      description: description || foundProduct.description,
+      slug: (name && slugify(name)) || foundProduct.slug,
+      category: category || foundProduct.category,
+      brand: brand || foundProduct.brand,
+      price: price * 100 || foundProduct.price,
+      countInStock: countInStock || foundProduct.countInStock,
+    },
+    { new: true },
+  );
 
   return res.status(200).json({ status: 'success', data });
 };

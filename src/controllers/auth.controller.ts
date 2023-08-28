@@ -47,7 +47,6 @@ export const registerUser = async (req: Request, res: Response) => {
       totalPrice: 0,
       taxPrice: 0,
       totalPriceAfterTax: 0,
-      grandTotal: 0,
     });
     await cart.save();
   }
@@ -59,7 +58,6 @@ export const registerUser = async (req: Request, res: Response) => {
       totalPrice: 0,
       taxPrice: 0,
       totalPriceAfterTax: 0,
-      grandTotal: 0,
     });
     await cart.save();
 
@@ -129,95 +127,90 @@ export const registerUser = async (req: Request, res: Response) => {
  */
 export const loginUser = async (req: Request, res: Response) => {
   const { password, email, cartItems } = req.body;
-  try {
-    const foundUser = await User.findOne({ email });
 
-    if (!foundUser) {
-      return res.status(400).json({ status: 'failed', message: 'email or password is incorrect' });
-    }
+  const foundUser = await User.findOne({ email });
 
-    const verifyUserPassword = comparePassword(password, foundUser.password);
-
-    if (!verifyUserPassword) {
-      return res.status(401).json({ status: 'failed', message: 'email or password is incorrect' });
-    }
-
-    const userCart = await Cart.findById(foundUser.cartId);
-
-    if (!userCart) {
-      return res.status(404).json({ status: 'failed', message: 'user cart not found' });
-    }
-
-    if (cartItems && cartItems.length === 0) {
-      let result = getTotal(userCart?.cartItems);
-      await Cart.findOneAndUpdate(
-        { _id: foundUser.cartId },
-        {
-          cartItems: userCart?.cartItems,
-          totalPrice: result.totalPrice,
-          totalQuantity: result.totalQuantity,
-          totalTax: result.totalTax,
-          totalPriceAfterTax: result.totalPriceAfterTax,
-        },
-        { new: true },
-      );
-    }
-
-    if (cartItems && cartItems.length > 0) {
-      const productsInCart = cartItems.map((item: any) => {
-        const taxValue = vatFunction(item.price);
-        return {
-          productId: item._id,
-          quantity: item?.cartQuantity,
-          name: item.name,
-          image: item.images[0].secureUrl,
-          price: item.price,
-          taxPrice: taxValue.vatInCents,
-          priceAfterTax: taxValue.getVat,
-        };
-      });
-
-      let result = getTotal(productsInCart);
-
-      await Cart.findOneAndUpdate(
-        { _id: foundUser.cartId },
-        {
-          cartItems: productsInCart,
-          totalPrice: result.totalPrice,
-          totalQuantity: result.totalQuantity,
-          totalTax: result.totalTax,
-          totalPriceAfterTax: result.totalPriceAfterTax,
-        },
-        { new: true },
-      );
-    }
-
-    const payload = {
-      _id: foundUser?._id,
-      email: foundUser?.email.toLowerCase(),
-      cartId: foundUser?.cartId,
-      role: foundUser?.role.toLowerCase(),
-    };
-    const accessToken = generateToken(payload, process.env.SECRET_KEY as string);
-
-    const data = {
-      _id: foundUser?._id,
-      firstName: foundUser?.firstName,
-      lastName: foundUser?.lastName,
-      email: foundUser?.email.toLowerCase(),
-      address: foundUser?.address,
-      phoneNumber: foundUser?.phoneNumber,
-      cartId: foundUser?.cartId,
-      role: foundUser?.role.toLowerCase(),
-    };
-
-    console.log('DATA', data);
-
-    res.cookie('accessToken', accessToken, accessTokenCookieOptions);
-    return res.status(200).json({ status: 'success', data });
-  } catch (error) {
-    console.log('ERROR', error);
+  if (!foundUser) {
+    return res.status(400).json({ status: 'failed', message: 'email or password is incorrect' });
   }
+
+  const verifyUserPassword = comparePassword(password, foundUser.password);
+
+  if (!verifyUserPassword) {
+    return res.status(401).json({ status: 'failed', message: 'email or password is incorrect' });
+  }
+
+  const userCart = await Cart.findById(foundUser.cartId);
+
+  if (!userCart) {
+    return res.status(404).json({ status: 'failed', message: 'user cart not found' });
+  }
+
+  if (cartItems && cartItems.length === 0) {
+    let result = getTotal(userCart?.cartItems);
+    await Cart.findOneAndUpdate(
+      { _id: foundUser.cartId },
+      {
+        cartItems: userCart?.cartItems,
+        totalPrice: result.totalPrice,
+        totalQuantity: result.totalQuantity,
+        totalTax: result.totalTax,
+        totalPriceAfterTax: result.totalPriceAfterTax,
+      },
+      { new: true },
+    );
+  }
+
+  if (cartItems && cartItems.length > 0) {
+    const productsInCart = cartItems.map((item: any) => {
+      const taxValue = vatFunction(item.price);
+      return {
+        productId: item._id,
+        quantity: item?.cartQuantity,
+        name: item.name,
+        image: item.images[0].secureUrl,
+        price: item.price,
+        taxPrice: taxValue.vatInCents,
+        priceAfterTax: taxValue.getVat,
+      };
+    });
+
+    let result = getTotal(productsInCart);
+
+    await Cart.findOneAndUpdate(
+      { _id: foundUser.cartId },
+      {
+        cartItems: productsInCart,
+        totalPrice: result.totalPrice,
+        totalQuantity: result.totalQuantity,
+        totalTax: result.totalTax,
+        totalPriceAfterTax: result.totalPriceAfterTax,
+      },
+      { new: true },
+    );
+  }
+
+  const payload = {
+    _id: foundUser?._id,
+    email: foundUser?.email.toLowerCase(),
+    cartId: foundUser?.cartId,
+    role: foundUser?.role.toLowerCase(),
+  };
+  const accessToken = generateToken(payload, process.env.SECRET_KEY as string);
+
+  const data = {
+    _id: foundUser?._id,
+    firstName: foundUser?.firstName,
+    lastName: foundUser?.lastName,
+    email: foundUser?.email.toLowerCase(),
+    address: foundUser?.address,
+    phoneNumber: foundUser?.phoneNumber,
+    cartId: foundUser?.cartId,
+    role: foundUser?.role.toLowerCase(),
+  };
+
+  res.cookie('accessToken', accessToken, accessTokenCookieOptions);
+  return res.status(200).json({ status: 'success', data });
 };
 
 /**

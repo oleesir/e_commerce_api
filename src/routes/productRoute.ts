@@ -7,7 +7,7 @@ import {
   updateProduct,
   searchProducts,
 } from '../controllers/product.controller';
-import { authorizedRole, isAuth } from '../middleware/authorization.middleware';
+import { authorizedRoles, checkAuthToken } from '../middleware/authorization.middleware';
 import { validateCreateProduct, validateUpdateProduct } from '../middleware/validation.middleware';
 import { uploadFile } from '../utils/multer';
 import { roles } from '../utils/constants';
@@ -17,8 +17,8 @@ const router: Router = Router();
 
 router.post(
   '/',
-  isAuth,
-  authorizedRole([roles.ADMIN, roles.SELLER]),
+  checkAuthToken,
+  authorizedRoles([roles.ADMIN, roles.SELLER]),
   uploadFile.array('images', 10),
   validateCreateProduct,
   asyncHandler(createProduct),
@@ -29,16 +29,16 @@ router.get('/', asyncHandler(getAllProducts));
 
 router.patch(
   '/:_id',
-  isAuth,
-  authorizedRole([roles.ADMIN, roles.SELLER]),
+  checkAuthToken,
+  authorizedRoles([roles.ADMIN, roles.SELLER]),
   validateUpdateProduct,
   asyncHandler(updateProduct),
 );
 
 router.delete(
   '/:_id',
-  isAuth,
-  authorizedRole([roles.ADMIN, roles.SELLER]),
+  checkAuthToken,
+  authorizedRoles([roles.ADMIN, roles.SELLER]),
   asyncHandler(deleteProduct),
 );
 
