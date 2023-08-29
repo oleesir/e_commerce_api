@@ -4,6 +4,7 @@ import Cart from '../database/models/cartModel';
 import User from '../database/models/userModel';
 import Order from '../database/models/orderModel';
 import Product from '../database/models/productModel';
+import Mailer from '../utils/mailer';
 
 // @ts-ignore
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -29,27 +30,9 @@ const createOrder = async ({ customer, data }: { customer: any; data: any }) => 
 
   const userId = customer.metadata.userId;
 
-  let userCart = await Cart.findById(cartId);
+  const userCart = await Cart.findById(cartId);
 
-  let foundUser = await User.findById(userId);
-
-  const order = new Order({
-    userId: foundUser?._id,
-    customerId: data.customer,
-    paymentIntentId: data.payment_intent,
-    cartItems: userCart?.cartItems,
-    totalQuantity: userCart?.totalQuantity,
-    totalPrice: userCart?.totalPrice,
-    totalTax: userCart?.totalTax,
-    totalPriceAfterTax: userCart?.totalPriceAfterTax,
-    txStatus: 'successful',
-  });
-
-  const createdOrder = await order.save();
-
-  if (!createdOrder) {
-    throw new Error('Order was not created');
-  }
+  const foundUser = await User.findById(userId);
 
   userCart?.cartItems.map(async (cartItem: any) => {
     const product = await Product.findById({ _id: cartItem?.productId.toString() });
@@ -65,6 +48,20 @@ const createOrder = async ({ customer, data }: { customer: any; data: any }) => 
     );
   });
 
+  const order = new Order({
+    userId: foundUser?._id,
+    customerId: data.customer,
+    paymentIntentId: data.payment_intent,
+    cartItems: userCart?.cartItems,
+    totalQuantity: userCart?.totalQuantity,
+    totalPrice: userCart?.totalPrice,
+    totalTax: userCart?.totalTax,
+    totalPriceAfterTax: userCart?.totalPriceAfterTax,
+    txStatus: 'successful',
+  });
+
+  const createdOrder = await order.save();
+
   await Cart.findByIdAndUpdate(
     { _id: userCart?._id },
     {
@@ -76,6 +73,19 @@ const createOrder = async ({ customer, data }: { customer: any; data: any }) => 
     },
     { new: true },
   );
+
+  if (createdOrder) {
+    await Mailer.send({
+      to: foundUser?.email || '',
+      subject: 'Order Confirmation',
+      firstName: foundUser?.firstName || '',
+      orderId: createdOrder?._id,
+      province: foundUser?.province || '',
+      city: foundUser?.city || '',
+      price: createdOrder?.totalPriceAfterTax || 0,
+      orderLink: 'olivemarket.ca',
+    });
+  }
 };
 
 /**
