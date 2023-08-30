@@ -2,7 +2,12 @@ import { Request, Response } from 'express';
 import cloudinary from '../utils/cloudinary';
 import { slugify } from '../utils/slugify';
 import Product from '../database/models/productModel';
-import Cart from '../database/models/cartModel';
+
+interface MatchingQuery {
+  brand?: string;
+  category?: string;
+  ratings?: string;
+}
 
 /**
  * create a product
@@ -142,6 +147,36 @@ export const getSingleProduct = async (req: Request, res: Response) => {
   if (!data) {
     return res.status(404).json({ status: 'failed', message: 'Product does not exist' });
   }
+  return res.status(200).json({ status: 'success', data });
+};
+
+/**
+ * filter products
+ * @method getSingleProduct
+ * @memberof productController
+ * @param {object} req
+ * @param {object} res
+ * @returns {(function|object)} Function next() or JSON object
+ */
+export const filterProducts = async (req: Request, res: Response) => {
+  let brand = req.query.brand as string;
+  let category = req.query.category as string;
+  let ratings = req.query.ratings as string;
+
+  let match: MatchingQuery = {};
+
+  if (brand) {
+    match.brand = brand;
+  }
+  if (category) {
+    match.category = category;
+  }
+  if (ratings) {
+    match.ratings = ratings;
+  }
+
+  const data = await Product.aggregate([{ $match: match }]);
+
   return res.status(200).json({ status: 'success', data });
 };
 
