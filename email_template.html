@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+  <style>
+      body {
+          font-family: Arial, sans-serif;
+          background-color: #f2f2f2;
+      }
+
+      .container {
+          max-width: 700px;
+          margin: 0 auto;
+          padding: 20px;
+          background-color: #FAF3F0;
+          border-radius: 5px;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .header {
+          margin-bottom: 20px;
+      }
+
+      .header h1 {
+          color: #333;
+          font-size: 24px;
+          margin: 0;
+      }
+      .header_one  {
+          width: 100%;
+          text-align: right;
+      }
+
+      .content {
+          margin-bottom: 30px;
+      }
+
+      .content p {
+          color: #352F44;
+          margin: 0 0 8px;
+          line-height: 1.5;
+          font-size: 14px;
+      }
+
+      .footer {
+          display: flex;
+          flex-direction: column;
+          border-top: 1px solid #FAF0E6;
+          padding: 20px;
+
+      }
+
+      .footer p {
+          color: #352F44;
+          font-size: 14px;
+          margin: 0 0 8px;
+
+      }
+
+      .price {
+          width: 400px;
+          display: flex;
+          justify-content: space-between;
+      }
+      .orderTotal{
+          margin-right: 3px;
+      }
+      .boldFont{
+          font-weight: bold;
+      }
+  </style>
+  <title></title>
+</head>
+<body>
+<div class="container">
+  <div class="header_one">
+    <p>Shipping Confirmation</p>
+    <p>Order {{orderId}}</p>
+  </div>
+
+  <div class="header">
+    <p class='boldFont'>Hello {{firstName}},</p>
+  </div>
+  <div class="content">
+    <p>Thank you for shopping with us. We thought you'd like to know that your item has been shipped,</p>
+    <p>and that this completes your order. Your order is on its way, and can no longer</p>
+    <p>be changed. If you need to return an item from this shipment or manage other orders,</p>
+    <p>please visit {{orderLink}}</p>
+  </div>
+  <div class="footer">
+    <div class="price">
+      <div><p>Your order was sent to: </p>
+        <p>{{firstName}}</p>
+        <p class='boldFont'>{{city}},{{province}}</p>
+      </div>
+
+    </div>
+      <div class="price">
+        <p class='orderTotal'>Total:</p>
+        <p class='boldFont'>CAD{{price}}</p>
+      </div>
+
+
+  </div>
+</div>
+</body>
+</html>
