@@ -3,12 +3,6 @@ import cloudinary from '../utils/cloudinary';
 import { slugify } from '../utils/slugify';
 import Product from '../database/models/productModel';
 
-interface MatchingQuery {
-  brand?: string;
-  category?: string;
-  ratings?: string;
-}
-
 /**
  * create a product
  * @method createProduct
@@ -152,30 +146,34 @@ export const getSingleProduct = async (req: Request, res: Response) => {
 
 /**
  * filter products
- * @method getSingleProduct
+ * @method filterProduct
  * @memberof productController
  * @param {object} req
  * @param {object} res
  * @returns {(function|object)} Function next() or JSON object
  */
 export const filterProducts = async (req: Request, res: Response) => {
-  let brand = req.query.brand as string;
-  let category = req.query.category as string;
-  let ratings = req.query.ratings as string;
+  const { brands, categories, ratings } = req.query;
 
-  let match: MatchingQuery = {};
+  const pipeline = [];
 
-  if (brand) {
-    match.brand = brand;
-  }
-  if (category) {
-    match.category = category;
-  }
-  if (ratings) {
-    match.ratings = ratings;
+  if (brands || categories || ratings) {
+    let match: any = {};
+
+    if (brands) {
+      match.brand = { $in: (brands as string).split(',') };
+    }
+    if (categories) {
+      match.category = { $in: (categories as string).split(',') };
+    }
+    if (ratings) {
+      match.rating = { $in: (ratings as string).split(',') };
+    }
+
+    pipeline.push({ $match: match });
   }
 
-  const data = await Product.aggregate([{ $match: match }]);
+  const data = await Product.aggregate(pipeline);
 
   return res.status(200).json({ status: 'success', data });
 };
