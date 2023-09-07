@@ -2,6 +2,38 @@ import { Request, Response } from 'express';
 import cloudinary from '../utils/cloudinary';
 import { slugify } from '../utils/slugify';
 import Product from '../database/models/productModel';
+import Category from '../database/models/categoryModel';
+import Brand from '../database/models/brandModel';
+
+const assignBrandToProduct = async (value: string) => {
+  const getValue = await Brand.findOne({ name: value });
+
+  if (!getValue) {
+    const brand = new Brand({
+      name: value,
+    });
+    const data = await brand.save();
+
+    return { brandId: data._id, name: data.name };
+  }
+
+  return { brandId: getValue._id, name: getValue.name };
+};
+
+const assignCategoryToProduct = async (value: string) => {
+  const getValue = await Category.findOne({ name: value });
+
+  if (!getValue) {
+    const category = new Category({
+      name: value,
+    });
+    const data = await category.save();
+
+    return { categoryId: data._id, name: data.name };
+  }
+
+  return { categoryId: getValue._id, name: getValue.name };
+};
 
 /**
  * create a product
@@ -37,8 +69,8 @@ export const createProduct = async (req: Request, res: Response) => {
     slug: slugify(name),
     images: cloudinaryUrls,
     price: price * 100,
-    category,
-    brand,
+    category: assignCategoryToProduct(category),
+    brand: assignBrandToProduct(brand),
     countInStock,
     rating,
     numberOfReviews,
@@ -153,24 +185,26 @@ export const getSingleProduct = async (req: Request, res: Response) => {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const filterProducts = async (req: Request, res: Response) => {
-  const { brands, categories, ratings } = req.query;
+  const { brands, categories } = req.query;
 
   const pipeline = [];
 
-  if (brands || categories || ratings) {
+  if (brands || categories) {
     let match: any = {};
 
     if (brands) {
-      match.brand = { $in: (brands as string).split(',') };
+      match['brand.name'] = { $in: (brands as string).split(',') };
     }
     if (categories) {
-      match.category = { $in: (categories as string).split(',') };
-    }
-    if (ratings) {
-      match.rating = { $in: (ratings as string).split(',') };
+      match['category.name'] = { $in: (categories as string).split(',') };
     }
 
     pipeline.push({ $match: match });
+  }
+
+  if (pipeline.length === 0) {
+    console.error('Pipeline is empty. Aborting aggregation.');
+    return;
   }
 
   const data = await Product.aggregate(pipeline);

@@ -1,7 +1,9 @@
 import mongoose, { ConnectOptions } from 'mongoose';
 import Product from '../models/productModel';
 import dotenv from 'dotenv';
-import { getProductsDummyData } from '../data/dummyData';
+import { brands, categories, getProductsDummyData } from '../data/dummyData';
+import Category from '../models/categoryModel';
+import Brand from '../models/brandModel';
 dotenv.config();
 
 mongoose
@@ -20,7 +22,13 @@ mongoose
   });
 
 const seedDB = async () => {
+  await Brand.deleteMany({});
+  await Brand.insertMany(brands);
+  await Category.deleteMany({});
+  await Category.insertMany(categories);
+
   const dummyData = await getProductsDummyData();
+
   await Product.deleteMany({});
   await Product.insertMany(dummyData);
 };

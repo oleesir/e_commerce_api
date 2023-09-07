@@ -43,7 +43,6 @@ import { vatFunction } from '../utils/vatFunction';
  */
 export const addItemToCart = async (req: Request, res: Response) => {
   const { productId, price, cartId, name, image } = req.body;
-  let cart;
 
   let userCart = await Cart.findById({ _id: cartId });
 
