@@ -66,7 +66,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
       return {
         productId: item._id,
-        quantity: item?.cartQuantity,
+        quantity: item?.quantity,
         name: item.name,
         image: item.images[0].secureUrl,
         price: item.price,
@@ -166,7 +166,7 @@ export const loginUser = async (req: Request, res: Response) => {
       const taxValue = vatFunction(item.price);
       return {
         productId: item._id,
-        quantity: item?.cartQuantity,
+        quantity: item?.quantity,
         name: item.name,
         image: item.images[0].secureUrl,
         price: item.price,
