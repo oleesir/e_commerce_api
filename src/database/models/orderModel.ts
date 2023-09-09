@@ -15,6 +15,7 @@ interface IOrder extends Document {
       priceAfterTax: number;
     },
   ];
+  receiptUrl: string;
   totalQuantity: number;
   totalPrice: number;
   totalTax: number;
@@ -41,6 +42,7 @@ const orderSchema = new Schema<IOrder>(
         priceAfterTax: { type: Number, default: 0 },
       },
     ],
+    receiptUrl: { type: String, required: true },
     totalQuantity: { type: Number, default: 0 },
     totalPrice: { type: Number, default: 0 },
     totalTax: { type: Number, required: true, default: 0 },

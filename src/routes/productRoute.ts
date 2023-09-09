@@ -9,10 +9,12 @@ import {
   filterProducts,
 } from '../controllers/product.controller';
 import { authorizedRoles, checkAuthToken } from '../middleware/authorization.middleware';
-import { validateCreateProduct, validateUpdateProduct } from '../middleware/validation.middleware';
 import { uploadFile } from '../utils/multer';
 import { roles } from '../utils/constants';
 import asyncHandler from '../middleware/asyncErrorHandler.middleware';
+import { createProductSchema } from '../schema/createProductSchema';
+import { validate } from '../middleware/validate.middleware';
+import { updateProductSchema } from '../schema/updateProductSchema';
 
 const router: Router = Router();
 
@@ -21,7 +23,7 @@ router.post(
   checkAuthToken,
   authorizedRoles([roles.ADMIN, roles.SELLER]),
   uploadFile.array('images', 10),
-  validateCreateProduct,
+  validate(createProductSchema),
   asyncHandler(createProduct),
 );
 router.get('/filter', asyncHandler(filterProducts));
@@ -33,7 +35,7 @@ router.patch(
   '/:_id',
   checkAuthToken,
   authorizedRoles([roles.ADMIN, roles.SELLER]),
-  validateUpdateProduct,
+  validate(updateProductSchema),
   asyncHandler(updateProduct),
 );
 
