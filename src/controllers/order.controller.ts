@@ -25,7 +25,15 @@ const updateStock = ({
   }
 };
 
-const createOrder = async ({ customer, data }: { customer: any; data: any }) => {
+const createOrder = async ({
+  customer,
+  data,
+  receiptUrl,
+}: {
+  customer: any;
+  data: any;
+  receiptUrl: string | null | undefined;
+}) => {
   const cartId = customer.metadata.cartId;
 
   const userId = customer.metadata.userId;
@@ -52,6 +60,7 @@ const createOrder = async ({ customer, data }: { customer: any; data: any }) => 
     userId: foundUser?._id,
     customerId: data.customer,
     paymentIntentId: data.payment_intent,
+    receiptUrl: receiptUrl,
     cartItems: userCart?.cartItems,
     totalQuantity: userCart?.totalQuantity,
     totalPrice: userCart?.totalPrice,
@@ -183,29 +192,31 @@ export const stripeWebhook = async (req: Request, res: Response) => {
     throw new Error('No stripe signature found!');
   }
 
-  if (process.env.END_POINT_SECRET) {
-    let event;
+  let event;
 
-    try {
-      event = stripe.webhooks.constructEvent(
-        stripePayload,
-        stripeSignature?.toString(),
-        process.env.END_POINT_SECRET,
-      );
-    } catch (err: any) {
-      console.log(`Webhook Error: ${err.message}`);
-      return res.status(400).send(`Webhook Error: ${err.message}`);
-    }
-    data = event.data.object;
-    eventType = event.type;
-  } else {
-    data = req.body.data.object;
-    eventType = req.body.type;
+  try {
+    event = stripe.webhooks.constructEvent(
+      stripePayload,
+      stripeSignature?.toString(),
+      process.env.END_POINT_SECRET as string,
+    );
+  } catch (err: any) {
+    console.log(`Webhook Error: ${err.message}`);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
   }
+  data = event.data.object;
+  eventType = event.type;
 
   if (eventType === 'checkout.session.completed') {
-    const customer = await stripe.customers.retrieve(data?.customer);
-    await createOrder({ customer, data });
+    const session = event.data.object as Stripe.Checkout.Session;
+
+    const customer = await stripe.customers.retrieve(session?.customer as string);
+
+    const paymentIntent = await stripe.paymentIntents.retrieve(session?.payment_intent as string);
+    const charge = paymentIntent?.charges?.data[0];
+    const receiptUrl = charge?.receipt_url;
+
+    await createOrder({ customer, data, receiptUrl });
   }
   // Return a 200 response to acknowledge receipt of the event
   res.send().end();
