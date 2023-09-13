@@ -11,10 +11,10 @@ import {
 import { authorizedRoles, checkAuthToken } from '../middleware/authorization.middleware';
 import { uploadFile } from '../utils/multer';
 import { roles } from '../utils/constants';
-import asyncHandler from '../middleware/asyncErrorHandler.middleware';
-import { createProductSchema } from '../schema/createProductSchema';
-import { validate } from '../middleware/validate.middleware';
 import { updateProductSchema } from '../schema/updateProductSchema';
+import { createProductSchema } from '../schema/createProductSchema';
+import asyncHandler from '../middleware/asyncErrorHandler.middleware';
+import { validate } from '../middleware/validate.middleware';
 
 const router: Router = Router();
 
