@@ -58,10 +58,22 @@ export const users = [
 ];
 
 export const categories = [
-  { name: 'Keyboard' },
-  { name: 'Monitor' },
-  { name: 'Phone' },
-  { name: 'Headset' },
+  {
+    name: 'Keyboard',
+    image: 'https://res.cloudinary.com/dhixv0jh9/image/upload/v1694064144/fs4rst3a2ode98tbawu3.jpg',
+  },
+  {
+    name: 'Monitor',
+    image: 'https://res.cloudinary.com/dhixv0jh9/image/upload/v1694064154/gpk8fluqrcipukeiimfd.jpg',
+  },
+  {
+    name: 'Phone',
+    image: 'https://res.cloudinary.com/dhixv0jh9/image/upload/v1694064162/nm8wbkpdckm5g1iebbhn.jpg',
+  },
+  {
+    name: 'Headset',
+    image: 'https://res.cloudinary.com/dhixv0jh9/image/upload/v1694064149/q1pmjwv4h11su13mdvyg.jpg',
+  },
 ];
 
 export const brands = [

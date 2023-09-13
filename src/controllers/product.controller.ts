@@ -20,19 +20,20 @@ const assignBrandToProduct = async (value: string) => {
   return { brandId: getValue._id, name: getValue.name };
 };
 
-const assignCategoryToProduct = async (value: string) => {
+const assignCategoryToProduct = async (value: string, image: string) => {
   const getValue = await Category.findOne({ name: value });
 
   if (!getValue) {
     const category = new Category({
       name: value,
+      image,
     });
     const data = await category.save();
 
-    return { categoryId: data._id, name: data.name };
+    return { categoryId: data._id, name: data.name, image: data.image };
   }
 
-  return { categoryId: getValue._id, name: getValue.name };
+  return { categoryId: getValue._id, name: getValue.name, image: getValue.image };
 };
 
 /**
@@ -57,6 +58,7 @@ export const createProduct = async (req: Request, res: Response) => {
   );
 
   let imageResponses = await Promise.all(multiplePicturePromise);
+
   const cloudinaryUrls = imageResponses.map((img) => {
     return {
       secureUrl: img.secure_url,
@@ -69,7 +71,7 @@ export const createProduct = async (req: Request, res: Response) => {
     slug: slugify(name),
     images: cloudinaryUrls,
     price: price * 100,
-    category: assignCategoryToProduct(category),
+    category: assignCategoryToProduct(category, cloudinaryUrls[0].secureUrl),
     brand: assignBrandToProduct(brand),
     countInStock,
     rating,
@@ -185,12 +187,16 @@ export const getSingleProduct = async (req: Request, res: Response) => {
  * @returns {(function|object)} Function next() or JSON object
  */
 export const filterProducts = async (req: Request, res: Response) => {
-  const { brands, categories } = req.query;
+  const { brands, categories, category } = req.query;
 
   const pipeline = [];
 
-  if (brands || categories) {
+  if (brands || categories || category) {
     let match: any = {};
+
+    if (category) {
+      match['category.name'] = category;
+    }
 
     if (brands) {
       match['brand.name'] = { $in: (brands as string).split(',') };
