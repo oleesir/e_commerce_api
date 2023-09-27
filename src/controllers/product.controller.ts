@@ -178,9 +178,9 @@ export const getSingleProduct = async (req: Request, res: Response) => {
   return res.status(200).json({ status: 'success', data });
 };
 
-/**
+/**yarn dev
  * filter products
- * @method filterProduct
+ * @method filterProducts
  * @memberof productController
  * @param {object} req
  * @param {object} res

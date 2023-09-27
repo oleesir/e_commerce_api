@@ -8,7 +8,7 @@ import comparePassword from '../utils/comparePassword';
 import log from '../utils/logger';
 import Cart from '../database/models/cartModel';
 import { getTotal } from '../utils/getTotalPriceAndQuantity';
-import { vatFunction } from '../utils/vatFunction';
+import { syncVatFunction } from '../utils/vatFunction';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -36,7 +36,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
   const foundUser = await User.findOne({ email });
 
-  if (foundUser) return res.status(400).json({ status: 'failed', message: 'Email already exist' });
+  if (foundUser) return res.status(401).json({ status: 'failed', message: 'Email already exist.' });
 
   const hashed = bcrypt.hashSync(password, 10);
 
@@ -62,7 +62,7 @@ export const registerUser = async (req: Request, res: Response) => {
     await cart.save();
 
     const productsInCart = cartItems.map((item: any) => {
-      const taxValue = vatFunction(item.price);
+      const taxValue = syncVatFunction(item.price);
 
       return {
         productId: item._id,
@@ -105,11 +105,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
   const data = {
     _id: savedUser?._id,
-    firstName: savedUser?.firstName,
-    lastName: savedUser?.lastName,
-    email: savedUser?.email.toLowerCase(),
-    address: savedUser?.address,
-    phoneNumber: savedUser?.phoneNumber,
+    cartId: savedUser?.cartId,
     role: savedUser?.role.toLowerCase(),
   };
 
@@ -148,6 +144,7 @@ export const loginUser = async (req: Request, res: Response) => {
 
   if (cartItems && cartItems.length === 0) {
     let result = getTotal(userCart?.cartItems);
+
     await Cart.findOneAndUpdate(
       { _id: foundUser.cartId },
       {
@@ -163,28 +160,34 @@ export const loginUser = async (req: Request, res: Response) => {
 
   if (cartItems && cartItems.length > 0) {
     const productsInCart = cartItems.map((item: any) => {
-      const taxValue = vatFunction(item.price);
+      const taxValue = syncVatFunction(item?.price);
+
       return {
-        productId: item._id,
+        productId: item?._id,
         quantity: item?.quantity,
-        name: item.name,
-        image: item.images[0].secureUrl,
-        price: item.price,
+        name: item?.name,
+        image: item?.images[0].secureUrl,
+        price: item?.price,
         taxPrice: taxValue.vatInCents,
         priceAfterTax: taxValue.getVat,
       };
     });
 
-    let result = getTotal(productsInCart);
+    let result: {
+      totalQuantity: number;
+      totalPrice: number;
+      totalTax: number;
+      totalPriceAfterTax: number;
+    } = getTotal(productsInCart);
 
     await Cart.findOneAndUpdate(
-      { _id: foundUser.cartId },
+      { _id: foundUser?.cartId },
       {
         cartItems: productsInCart,
-        totalPrice: result.totalPrice,
-        totalQuantity: result.totalQuantity,
-        totalTax: result.totalTax,
-        totalPriceAfterTax: result.totalPriceAfterTax,
+        totalPrice: result?.totalPrice,
+        totalQuantity: result?.totalQuantity,
+        totalTax: result?.totalTax,
+        totalPriceAfterTax: result?.totalPriceAfterTax,
       },
       { new: true },
     );
@@ -200,11 +203,6 @@ export const loginUser = async (req: Request, res: Response) => {
 
   const data = {
     _id: foundUser?._id,
-    firstName: foundUser?.firstName,
-    lastName: foundUser?.lastName,
-    email: foundUser?.email.toLowerCase(),
-    address: foundUser?.address,
-    phoneNumber: foundUser?.phoneNumber,
     cartId: foundUser?.cartId,
     role: foundUser?.role.toLowerCase(),
   };

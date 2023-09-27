@@ -55,7 +55,7 @@ app.use(cookieParser());
 //API
 app.use('/api/v1', routes);
 
-app.get('/', (req: Request, res: Response) => {
+app.get('/', (_, res: Response) => {
   return res.status(200).send({
     message: 'MY E-COMMERCE BACKEND',
   });
