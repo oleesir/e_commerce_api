@@ -34,9 +34,9 @@ const cartSchema = new Schema<ICartItems>({
   ],
   totalQuantity: { type: Number, default: 0 },
   totalPrice: { type: Number, default: 0 },
-  totalTax: { type: Number, required: true, default: 0 },
+  totalTax: { type: Number, default: 0 },
   // shippingPrice: { type: Number, required: true, default: 0 },
-  totalPriceAfterTax: { type: Number, required: true, default: 0 },
+  totalPriceAfterTax: { type: Number, default: 0 },
   // grandTotal: { type: Number, required: true, default: 0 },
 });
 

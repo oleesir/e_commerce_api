@@ -159,6 +159,7 @@ export const loginUser = async (req: Request, res: Response) => {
   }
 
   if (cartItems && cartItems.length > 0) {
+    console.log('READY', cartItems);
     const productsInCart = cartItems.map((item: any) => {
       const taxValue = syncVatFunction(item?.price);
 
@@ -172,6 +173,8 @@ export const loginUser = async (req: Request, res: Response) => {
         priceAfterTax: taxValue.getVat,
       };
     });
+
+    console.log('GO', productsInCart);
 
     let result: {
       totalQuantity: number;
