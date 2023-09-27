@@ -3,36 +3,6 @@ import Cart from '../database/models/cartModel';
 import { getTotal } from '../utils/getTotalPriceAndQuantity';
 import { vatFunction } from '../utils/vatFunction';
 
-// /**
-//  * create cart
-//  * @method createCart
-//  * @memberof cartController
-//  * @param {object} req
-//  * @param {object} res
-//  * @returns {(function|object)} Function next() or JSON object
-//  */
-// export const createCart = async (req: Request, res: Response) => {
-//   const { _id: userId } = (<any>req).user;
-//   let cart;
-//
-//   let data = await Cart.findOne({ userId });
-//
-//   if (!data) {
-//     cart = new Cart({
-//       userId,
-//       cartItems: [],
-//       totalQuantity: 0,
-//       totalPrice: 0,
-//       taxPrice: 0,
-//       totalPriceAfterTax: 0,
-//       grandTotal: 0,
-//     });
-//     data = await cart.save();
-//   }
-//
-//   return res.status(201).json({ status: 'success', data });
-// };
-
 /**
  * add items to cart
  * @method addItemToCart
@@ -49,18 +19,6 @@ export const addItemToCart = async (req: Request, res: Response) => {
   if (!userCart) {
     return res.status(404).json({ status: 'failed', message: 'Cart does not exist' });
   }
-  //
-  // if (!userCart) {
-  //   cart = new Cart({
-  //     cartItems: [],
-  //     totalQuantity: 0,
-  //     totalPrice: 0,
-  //     taxPrice: 0,
-  //     totalPriceAfterTax: 0,
-  //     grandTotal: 0,
-  //   });
-  //   userCart = await cart.save();
-  // }
 
   const taxValue = vatFunction(price);
 

@@ -224,7 +224,7 @@ export const stripeWebhook = async (req: Request, res: Response) => {
 
 /**
  * getUserOrder
- * @method getUserCartItems
+ * @method getUserOrder
  * @memberof orderController
  * @param {object} req
  * @param {object} res
@@ -237,6 +237,27 @@ export const getUserOrder = async (req: Request, res: Response) => {
 
   if (!data) {
     return res.status(404).json({ status: 'failed', message: 'Order does not exist' });
+  }
+
+  return res.status(200).json({ status: 'success', data });
+};
+
+/**
+ * getUserOrders
+ * @method getUserOrders
+ * @memberof orderController
+ * @param {object} req
+ * @param {object} res
+ * @returns {(function|object)} Function next() or JSON object
+ */
+export const getUserOrders = async (req: Request, res: Response) => {
+  const { _id } = req.params;
+  const { _id: userId } = (<any>req).user;
+
+  const data = await Order.find({ userId });
+
+  if (!data) {
+    return res.status(404).json({ status: 'failed', message: 'Orders does not exist' });
   }
 
   return res.status(200).json({ status: 'success', data });
