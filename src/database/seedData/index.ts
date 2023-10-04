@@ -1,9 +1,11 @@
 import mongoose, { ConnectOptions } from 'mongoose';
 import Product from '../models/productModel';
 import dotenv from 'dotenv';
-import { brands, categories, getProductsDummyData } from '../data/dummyData';
+import { brands, categories, cities, getProductsDummyData, states } from '../data/dummyData';
 import Category from '../models/categoryModel';
 import Brand from '../models/brandModel';
+import State from '../models/stateModel';
+import City from '../models/cityModel';
 dotenv.config();
 
 mongoose
@@ -22,6 +24,10 @@ mongoose
   });
 
 const seedDB = async () => {
+  await City.deleteMany({});
+  await City.insertMany(cities);
+  await State.deleteMany({});
+  await State.insertMany(states);
   await Brand.deleteMany({});
   await Brand.insertMany(brands);
   await Category.deleteMany({});

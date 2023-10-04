@@ -14,7 +14,7 @@ export const getTotal = (items: any) => {
   let totalPriceAfterTax = items.reduce((acc: any, item: any) => {
     return acc + item.priceAfterTax * item.quantity;
   }, 0);
-  console.log();
+
   return {
     totalQuantity,
     totalPrice,
