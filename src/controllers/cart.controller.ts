@@ -3,14 +3,6 @@ import Cart from '../database/models/cartModel';
 import { getTotal } from '../utils/getTotalPriceAndQuantity';
 import { vatFunction } from '../utils/vatFunction';
 
-/**
- * add items to cart
- * @method addItemToCart
- * @memberof cartController
- * @param {object} req
- * @param {object} res
- * @returns {(function|object)} Function next() or JSON object
- */
 export const addItemToCart = async (req: Request, res: Response) => {
   const { productId, price, cartId, name, image } = req.body;
 
@@ -71,14 +63,6 @@ export const addItemToCart = async (req: Request, res: Response) => {
   return res.status(201).json({ status: 'success', data });
 };
 
-/**
- * getUserCartItems
- * @method getUserCartItems
- * @memberof cartController
- * @param {object} req
- * @param {object} res
- * @returns {(function|object)} Function next() or JSON object
- */
 export const getUserCartItems = async (req: Request, res: Response) => {
   const { _id: cartId } = req.params;
 
@@ -90,15 +74,6 @@ export const getUserCartItems = async (req: Request, res: Response) => {
 
   return res.status(200).json({ status: 'success', data });
 };
-
-/**
- * reduce items in cart
- * @method reduceItemsInCart
- * @memberof cartController
- * @param {object} req
- * @param {object} res
- * @returns {(function|object)} Function next() or JSON object
- */
 
 export const reduceItemsInCart = async (req: Request, res: Response) => {
   const { productId, cartId } = req.body;
@@ -146,14 +121,6 @@ export const reduceItemsInCart = async (req: Request, res: Response) => {
   return res.status(200).json({ status: 'success', data });
 };
 
-/**
- * remove items in cart
- * @method removeItemsInCart
- * @memberof cartController
- * @param {object} req
- * @param {object} res
- * @returns {(function|object)} Function next() or JSON object
- */
 export const removeItemsInCart = async (req: Request, res: Response) => {
   const { productId, cartId } = req.body;
 
@@ -190,14 +157,6 @@ export const removeItemsInCart = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * delete cart
- * @method deleteCart
- * @memberof usersController
- * @param {object} req
- * @param {object} res
- * @returns {(function|object)} Function next() or JSON object
- */
 export const deleteCart = async (req: Request, res: Response) => {
   const { _id: cartId } = req.params;
 

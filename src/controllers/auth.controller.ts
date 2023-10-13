@@ -21,14 +21,6 @@ const accessTokenCookieOptions: CookieOptions = {
   domain: process.env.NODE_ENV === 'development' ? 'localhost' : 'ecommerce-api-p2uu.onrender.com',
 };
 
-/**
- * Registers a new user
- * @method registerUser
- * @memberof authController
- * @param {object} req
- * @param {object} res
- * @returns {(function|object)} Function next() or JSON object
- */
 export const registerUser = async (req: Request, res: Response) => {
   const { firstName, lastName, password, email, cartItems } = req.body;
 
@@ -113,14 +105,6 @@ export const registerUser = async (req: Request, res: Response) => {
   return res.status(201).json({ status: 'success', data });
 };
 
-/**
- * Login a new user
- * @method loginUser
- * @memberof authController
- * @param {object} req
- * @param {object} res
- * @returns {(function|object)} Function next() or JSON object
- */
 export const loginUser = async (req: Request, res: Response) => {
   const { password, email, cartItems } = req.body;
 
@@ -211,13 +195,6 @@ export const loginUser = async (req: Request, res: Response) => {
   return res.status(200).json({ status: 'success', data });
 };
 
-/**
- * loggedInUser
- * @method loggedInUser
- * @param {object} req
- * @param {object} res
- * @returns {(function|object)} Function next() or JSON object
- */
 export const loggedInUser = async (req: Request, res: Response) => {
   const token: string = req.cookies.accessToken;
 
@@ -243,13 +220,6 @@ export const loggedInUser = async (req: Request, res: Response) => {
   });
 };
 
-/**
- * logoutUser
- * @method logoutUser
- * @param {object} req
- * @param {object} res
- * @returns {(function|object)} Function next() or JSON object
- */
 export const logoutUser = async (req: Request, res: Response) => {
   const token: string = req.cookies.accessToken;
   if (!token) return res.status(403).json({ status: 'failed', error: 'token not found' });
@@ -259,13 +229,6 @@ export const logoutUser = async (req: Request, res: Response) => {
     .json({ message: 'Successfully logged out' });
 };
 
-/**
- * googleOAuth
- * @method googleOAuth
- * @param {object} req
- * @param {object} res
- * @returns {(function|object)} Function next() or JSON object
- */
 export const googleOAuth = async (req: Request, res: Response) => {
   try {
     //get the code from qs

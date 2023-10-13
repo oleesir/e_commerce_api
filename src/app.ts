@@ -22,7 +22,7 @@ const allowOrigins = [
   localhost,
   'https://checkout.stripe.com',
   'https://olivemarket.netlify.app',
-  'https://ebb6-174-95-166-224.ngrok-free.app',
+  'https://d592-174-95-166-224.ngrok-free.app',
 ];
 const corsOptions = {
   credentials: true,

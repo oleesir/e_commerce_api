@@ -97,14 +97,6 @@ const createOrder = async ({
   }
 };
 
-/**
- * checkout
- * @method placeOrder
- * @memberof orderController
- * @param {object} req
- * @param {object} res
- * @returns {(function|object)} Function next() or JSON object
- */
 export const placeOrder = async (req: Request, res: Response) => {
   const { cartId, address, phoneNumber, province, city } = req.body;
 
@@ -222,14 +214,6 @@ export const stripeWebhook = async (req: Request, res: Response) => {
   res.send().end();
 };
 
-/**
- * getUserOrder
- * @method getUserOrder
- * @memberof orderController
- * @param {object} req
- * @param {object} res
- * @returns {(function|object)} Function next() or JSON object
- */
 export const getUserOrder = async (req: Request, res: Response) => {
   const { _id } = req.params;
 
@@ -242,14 +226,6 @@ export const getUserOrder = async (req: Request, res: Response) => {
   return res.status(200).json({ status: 'success', data });
 };
 
-/**
- * getUserOrders
- * @method getUserOrders
- * @memberof orderController
- * @param {object} req
- * @param {object} res
- * @returns {(function|object)} Function next() or JSON object
- */
 export const getUserOrders = async (req: Request, res: Response) => {
   const { _id } = req.params;
   const { _id: userId } = (<any>req).user;
