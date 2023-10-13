@@ -912,7 +912,7 @@ Use your voice to type, edit and send texts and emails with Assistant voice typi
   },
 ];
 
-export const states = [
+export const provinces = [
   {
     name: 'Alberta',
     isoCode: 'AB',

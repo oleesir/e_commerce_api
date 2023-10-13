@@ -1,6 +1,6 @@
 import { Schema, Document, model } from 'mongoose';
 
-interface IState extends Document {
+interface IProvince extends Document {
   name: string;
   isoCode: string;
   countryCode: string;
@@ -8,7 +8,7 @@ interface IState extends Document {
   longitude: string;
 }
 
-const stateSchema = new Schema<IState>(
+const provinceSchema = new Schema<IProvince>(
   {
     name: { type: String, required: true },
     isoCode: { type: String, required: true },
@@ -19,6 +19,6 @@ const stateSchema = new Schema<IState>(
   { timestamps: true },
 );
 
-const State = model('State', stateSchema);
+const Province = model('Province', provinceSchema);
 
-export default State;
+export default Province;

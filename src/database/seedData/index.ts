@@ -1,11 +1,11 @@
 import mongoose, { ConnectOptions } from 'mongoose';
 import Product from '../models/productModel';
 import dotenv from 'dotenv';
-import { brands, categories, cities, getProductsDummyData, states } from '../data/dummyData';
+import { brands, categories, cities, getProductsDummyData, provinces } from '../data/dummyData';
 import Category from '../models/categoryModel';
 import Brand from '../models/brandModel';
-import State from '../models/stateModel';
 import City from '../models/cityModel';
+import Province from '../models/provinceModel';
 dotenv.config();
 
 mongoose
@@ -26,15 +26,13 @@ mongoose
 const seedDB = async () => {
   await City.deleteMany({});
   await City.insertMany(cities);
-  await State.deleteMany({});
-  await State.insertMany(states);
+  await Province.deleteMany({});
+  await Province.insertMany(provinces);
   await Brand.deleteMany({});
   await Brand.insertMany(brands);
   await Category.deleteMany({});
   await Category.insertMany(categories);
-
   const dummyData = await getProductsDummyData();
-
   await Product.deleteMany({});
   await Product.insertMany(dummyData);
 };

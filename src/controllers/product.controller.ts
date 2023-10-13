@@ -36,14 +36,6 @@ const assignCategoryToProduct = async (value: string, image: string) => {
   return { categoryId: getValue._id, name: getValue.name, image: getValue.image };
 };
 
-/**
- * create a product
- * @method createProduct
- * @memberof productController
- * @param {object} req
- * @param {object} res
- * @returns {(function|object)} Function next() or JSON object
- */
 export const createProduct = async (req: Request, res: Response) => {
   let imageFiles = req.files;
   const { name, price, category, brand, countInStock, rating, numberOfReviews, description } =
@@ -83,14 +75,6 @@ export const createProduct = async (req: Request, res: Response) => {
   return res.status(201).json({ status: 'success', data });
 };
 
-/**
- * get all products
- * @method getAllProducts
- * @memberof productController
- * @param {object} req
- * @param {object} res
- * @returns {(function|object)} Function next() or JSON object
- */
 export const getAllProducts = async (req: Request, res: Response) => {
   let page = parseInt(req.query.page as string) || 1;
   let limit = parseInt(req.query.limit as string) || 50;
@@ -105,14 +89,6 @@ export const getAllProducts = async (req: Request, res: Response) => {
     .json({ status: 'success', data, totalPages: Math.ceil(count / limit), currentPage: page });
 };
 
-/**
- * get all products
- * @method searchProducts
- * @memberof productController
- * @param {object} req
- * @param {object} res
- * @returns {(function|object)} Function next() or JSON object
- */
 export const searchProducts = async (req: Request, res: Response) => {
   let name = req.query.name as string;
 
@@ -120,54 +96,28 @@ export const searchProducts = async (req: Request, res: Response) => {
     return res.status(200).json({ status: 'success', products: [] });
   }
 
-  const agg = [
+  const data = await Product.aggregate([
     {
       $search: {
-        index: 'search-text',
-        compound: {
-          should: [
-            {
-              text: {
-                query: name,
-                path: ['name', 'brand'],
-                fuzzy: { maxEdits: 1 },
-              },
-            },
-            {
-              text: {
-                query: name,
-                path: ['brand'],
-                fuzzy: { maxEdits: 1 },
-              },
-            },
-            {
-              text: {
-                query: name,
-                path: ['category'],
-                fuzzy: { maxEdits: 1 },
-              },
-            },
-          ],
+        index: 'search-product',
+        autocomplete: {
+          query: name,
+          path: 'name',
+          fuzzy: {
+            maxEdits: 2,
+            prefixLength: 3,
+          },
         },
+        highlight: { path: ['name'] },
       },
     },
     { $limit: 10 },
-    { $project: { _id: 1, name: 1, slug: 1, images: 1, rating: 1, numberOfReviews: 1, price: 1 } },
-  ];
-
-  const data = await Product.aggregate(agg);
+    { $project: { _id: 1, name: 1, images: 1, rating: 1, numberOfReviews: 1, price: 1 } },
+  ]);
 
   return res.status(200).json({ status: 'success', data });
 };
 
-/**
- * get a single product
- * @method getSingleProduct
- * @memberof productController
- * @param {object} req
- * @param {object} res
- * @returns {(function|object)} Function next() or JSON object
- */
 export const getSingleProduct = async (req: Request, res: Response) => {
   const { _id } = req.params;
   const data = await Product.findById({ _id });
@@ -178,14 +128,6 @@ export const getSingleProduct = async (req: Request, res: Response) => {
   return res.status(200).json({ status: 'success', data });
 };
 
-/**yarn dev
- * filter products
- * @method filterProducts
- * @memberof productController
- * @param {object} req
- * @param {object} res
- * @returns {(function|object)} Function next() or JSON object
- */
 export const filterProducts = async (req: Request, res: Response) => {
   const { brands, categories, category } = req.query;
 
@@ -218,14 +160,6 @@ export const filterProducts = async (req: Request, res: Response) => {
   return res.status(200).json({ status: 'success', data });
 };
 
-/**
- * update product
- * @method updateProduct
- * @memberof productController
- * @param {object} req
- * @param {object} res
- * @returns {(function|object)} Function next() or JSON object
- */
 export const updateProduct = async (req: Request, res: Response) => {
   const { _id } = req.params;
   const { name, description, category, brand, price, countInStock } = req.body;
@@ -252,14 +186,6 @@ export const updateProduct = async (req: Request, res: Response) => {
   return res.status(200).json({ status: 'success', data });
 };
 
-/**
- * delete product
- * @method deleteProduct
- * @memberof productController
- * @param {object} req
- * @param {object} res
- * @returns {(function|object)} Function next() or JSON object
- */
 export const deleteProduct = async (req: Request, res: Response) => {
   const { _id } = req.params;
   const foundProduct = await Product.findById({ _id });

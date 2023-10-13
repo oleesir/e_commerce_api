@@ -1,16 +1,8 @@
 import { Request, Response } from 'express';
-import bcrypt from 'bcryptjs';
-import { generateToken } from '../utils/generateToken';
 import User from '../database/models/userModel';
+import Province from '../database/models/provinceModel';
+import City from '../database/models/cityModel';
 
-/**
- * get all users
- * @method getAllUsers
- * @memberof usersController
- * @param {object} req
- * @param {object} res
- * @returns {(function|object)} Function next() or JSON object
- */
 export const getAllUsers = async (req: Request, res: Response) => {
   let page = parseInt(req.query.page as string) || 1;
   let limit = parseInt(req.query.limit as string) || 5;
@@ -26,14 +18,6 @@ export const getAllUsers = async (req: Request, res: Response) => {
     .json({ status: 'success', data, totalPages: Math.ceil(count / limit), currentPage: page });
 };
 
-/**
- * get single user
- * @method getUser
- * @memberof usersController
- * @param {object} req
- * @param {object} res
- * @returns {(function|object)} Function next() or JSON object
- */
 export const getUser = async (req: Request, res: Response) => {
   const { _id } = req.params;
   const foundUser = await User.findById({ _id });
@@ -56,14 +40,6 @@ export const getUser = async (req: Request, res: Response) => {
   return res.status(200).json({ status: 'success', data });
 };
 
-/**
- * update user
- * @method updateUser
- * @memberof usersController
- * @param {object} req
- * @param {object} res
- * @returns {(function|object)} Function next() or JSON object
- */
 export const updateUser = async (req: Request, res: Response) => {
   const { _id } = req.params;
   const { firstName, lastName, email, role, address } = req.body;
@@ -85,14 +61,6 @@ export const updateUser = async (req: Request, res: Response) => {
   return res.status(200).json({ status: 'success', data });
 };
 
-/**
- * delete user
- * @method deleteUser
- * @memberof usersController
- * @param {object} req
- * @param {object} res
- * @returns {(function|object)} Function next() or JSON object
- */
 export const deleteUser = async (req: Request, res: Response) => {
   const { _id } = req.params;
 
@@ -105,4 +73,59 @@ export const deleteUser = async (req: Request, res: Response) => {
   await foundUser.deleteOne();
 
   return res.status(200).json({ status: 'success', message: 'Successfully deleted' });
+};
+
+export const getAllProvinces = async (req: Request, res: Response) => {
+  const data = await Province.find();
+  return res.status(200).json({ status: 'success', data });
+};
+
+export const getProvince = async (req: Request, res: Response) => {
+  const { _id } = req.params;
+  const foundProvince = await Province.findById({ _id });
+
+  if (!foundProvince) {
+    return res.status(404).json({ status: 'failed', message: 'Province does not exist' });
+  }
+
+  const data = {
+    _id: foundProvince?._id,
+    countryCode: foundProvince?.countryCode,
+    isoCode: foundProvince?.isoCode,
+  };
+  return res.status(200).json({ status: 'success', data });
+};
+
+export const searchCities = async (req: Request, res: Response) => {
+  let name = req.query.name as string;
+
+  if (!name) {
+    return res.status(200).json({ status: 'success', products: [] });
+  }
+
+  const data = await City.aggregate([
+    {
+      $search: {
+        index: 'search-city',
+        autocomplete: {
+          query: name,
+          path: 'name',
+          fuzzy: {
+            maxEdits: 2,
+            prefixLength: 3,
+          },
+        },
+        highlight: { path: ['name'] },
+      },
+    },
+    { $limit: 10 },
+    { $project: { _id: 1, name: 1, stateCode: 1 } },
+  ]);
+
+  return res.status(200).json({ status: 'success', data });
+};
+
+export const getAllCities = async (req: Request, res: Response) => {
+  const data = await City.find();
+  return res.status(200).json({ status: 'success', data });
 };
