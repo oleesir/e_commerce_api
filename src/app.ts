@@ -1,5 +1,5 @@
 import 'regenerator-runtime/runtime';
-import express, { Application, Request, Response } from 'express';
+import express, { Application, Response } from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import morgan from 'morgan';
