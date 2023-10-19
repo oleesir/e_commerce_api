@@ -24,13 +24,13 @@ export const addItemToCart = async (req: Request, res: Response) => {
 
     userCart.cartItems[itemIndex] = {
       ...cartItemToAdd,
-      productId: cartItemToAdd.productId,
-      name: cartItemToAdd.name,
+      productId: cartItemToAdd?.productId,
+      name: cartItemToAdd?.name,
       image: cartItemToAdd?.image,
-      quantity: cartItemToAdd.quantity + 1,
-      price: cartItemToAdd.price,
-      taxPrice: cartItemToAdd.taxPrice,
-      priceAfterTax: cartItemToAdd.priceAfterTax,
+      quantity: cartItemToAdd?.quantity + 1,
+      price: cartItemToAdd?.price,
+      taxPrice: cartItemToAdd?.taxPrice,
+      priceAfterTax: cartItemToAdd?.priceAfterTax,
     };
   } else {
     const newItem = {
