@@ -152,8 +152,8 @@ export const loginUser = async (req: Request, res: Response) => {
         name: item?.name,
         image: item?.images[0].secureUrl,
         price: item?.price,
-        taxPrice: taxValue?.vatInCents || 0,
-        priceAfterTax: taxValue?.getVat || 0,
+        taxPrice: taxValue?.vatInCents,
+        priceAfterTax: taxValue?.getVat,
       };
     });
 
