@@ -129,15 +129,19 @@ export const getSingleProduct = async (req: Request, res: Response) => {
 };
 
 export const filterProducts = async (req: Request, res: Response) => {
-  const { brands, categories, category } = req.query;
+  const { brands, categories, category, brand } = req.query;
 
   const pipeline = [];
 
-  if (brands || categories || category) {
+  if (brands || categories || category || brand) {
     let match: any = {};
 
     if (category) {
       match['category.name'] = category;
+    }
+
+    if (brand) {
+      match['brand.name'] = brand;
     }
 
     if (brands) {

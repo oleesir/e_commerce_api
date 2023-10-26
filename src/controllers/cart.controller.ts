@@ -18,7 +18,6 @@ export const addItemToCart = async (req: Request, res: Response) => {
     return cartItem?.productId.toString() === productId;
   });
 
-  // if item exists
   if (itemIndex >= 0) {
     const cartItemToAdd = userCart.cartItems[itemIndex];
 
