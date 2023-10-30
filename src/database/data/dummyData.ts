@@ -168,7 +168,7 @@ Beautifully crafted, the G915 TKL uses aircraft-grade aluminum alloy to deliver 
     rating: 0,
     numberOfReviews: 0,
     price: 16900,
-    countInStock: 20,
+    countInStock: 10,
   },
   {
     name: 'Keychron K3 Ultra-Slim 75% Layout Wireless Bluetooth/Wired USB Mechanical Keyboard, Hot Swappable Low-Profile Keychron Optical Switch White LED Backlight 84 Keys Keyboard for Mac Windows-Version 2',
