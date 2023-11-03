@@ -54,7 +54,7 @@ export const registerUser = async (req: Request, res: Response) => {
     await cart.save();
 
     const productsInCart = cartItems.map((item: any) => {
-      const taxValue = syncVatFunction(item.price);
+      const taxValue = syncVatFunction(item?.price);
 
       return {
         productId: item._id,
