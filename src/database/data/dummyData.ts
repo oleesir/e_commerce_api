@@ -149,7 +149,7 @@ Beautifully crafted, the G915 TKL uses aircraft-grade aluminum alloy to deliver 
     rating: 0,
     numberOfReviews: 0,
     price: 26900,
-    countInStock: 120,
+    countInStock: 12,
   },
   {
     name: 'NuPhy Air75 Mechanical Keyboard, 75% Low Profile Wireless/Wired Gaming Keyboard, Supports Bluetooth 5.0, 2.4G and Wired Connection, Compatible with Windows and Mac OS Systems-Gateron Brown Switch',

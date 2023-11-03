@@ -1,4 +1,3 @@
-import 'regenerator-runtime/runtime';
 import express, { Application, Response } from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
